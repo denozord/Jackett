@@ -3,36 +3,12 @@ id: cpasbien
 name: cpasbien
 description: "cpasbien is a FRENCH Public site for TV / MOVIES / GENERAL"
 language: fr-FR
-type: semi-private
+type: public
 encoding: UTF-8
 followredirect: true
 links:
-  - https://www2.cpasbien-fr.fr/
+  - https://feminalpes.fr/
 legacylinks:
-  - http://www.cpasbiens.cc/
-  - http://www.cpabien.cm/
-  - http://cpabien.cm/
-  - http://cpasbiens1.com/
-  - http://cpabien.mx/
-  - http://www.cpabien.bz/
-  - http://cpabien.org/
-  - http://cpabien.cc/
-  - http://cpabien.co/
-  - http://cpabien.la/
-  - http://cpabien.club/
-  - http://www.cpabien.io/
-  - https://ww1.cpabien.io/
-  - https://wvw.cpabien.cm/
-  - https://www.cpabien.io/
-  - https://www.cpabien9.net/
-  - https://wwv.cpabien.cm/
-  - http://www.cpabien.cx/
-  - https://www.cpasbien.blue/
-  - https://www.cpabien.cx/
-  - https://www.cpasbien.re/
-  - http://www.cpasbien.io/
-  - https://www.cpabien.bz/
-  - https://www.cpabien.link/
   - https://www.cpasbiens.cz/
   - https://www.cpasbiens.bz/
   - https://www.cpasbien.vg/
@@ -41,6 +17,16 @@ legacylinks:
   - https://vww.cpasbien-fr.fr/
   - https://wvw.cpasbien-fr.fr/
   - https://wwwv.cpasbien-fr.fr/
+  - https://www2.cpasbien-fr.fr/
+  - https://www.cpasbien-fr.nz/
+  - https://vwwvwvwvvw.cpasbien-fr.nz/
+  - https://cpasbiens3.fr/
+  - https://labastidevivante.fr/
+  - https://cpasbiens911.fr/
+  - https://jardattraction.fr/
+  - https://cpasbien-vf.fr/
+  - https://cpasbien-vf.pics/
+  - https://cpasbien-vf.li/
 
 caps:
   categories:
@@ -52,45 +38,29 @@ caps:
     movie-search: [q]
 
 settings:
-  - name: cookie
-    type: text
-    label: Cookie
-  - name: info_cookie
-    type: info
-    label: How to get the Cookie
-    default: "<ol><li>Login to this tracker with your browser<li>Solve the challenge<li>Open the <b>DevTools</b> panel by pressing <b>F12</b><li>Select the <b>Network</b> tab<li>Click on the <b>Doc</b> button<li>Refresh the page by pressing <b>F5</b><li>Select the <b>Headers</b> tab<li>Find <b>'cookie:'</b> in the <b>Request Headers</b> section<li><b>Select</b> and <b>Copy</b> the whole cookie string <i>(everything after 'cookie: ')</i> and <b>Paste</b> here.</ol>"
-  - name: flaresolverr
-    type: info
-    label: FlareSolverr
-    default: This site may use Cloudflare DDoS Protection, therefore Jackett requires <a href="https://github.com/Jackett/Jackett#configuring-flaresolverr" target="_blank">FlareSolver</a> to access it.
-  - name: info_8000
-    type: info
-    label: About cpasbien Categories
-    default: cpasbien does not return categories in its search results.</br>To add to your Apps' Torznab indexer, replace all categories with 8000(Other).
+  - name: info_flaresolverr
+    type: info_flaresolverr
+  - name: info_category_8000
+    type: info_category_8000
   - name: multilang
     type: checkbox
-    label: Replace MULTI by another language in release name
+    label: Replace MULTi by another language in release name
     default: false
   - name: multilanguage
     type: select
-    label: Replace MULTI by this language
+    label: Replace MULTi by this language
     default: FRENCH
     options:
       FRENCH: FRENCH
-      MULTI.FRENCH: MULTI.FRENCH
+      MULTi FRENCH: MULTi FRENCH
       ENGLISH: ENGLISH
-      MULTI.ENGLISH: MULTI.ENGLISH
+      MULTi ENGLISH: MULTi ENGLISH
       VOSTFR: VOSTFR
-      MULTI.VOSTFR: MULTI.VOSTFR
+      MULTi VOSTFR: MULTi VOSTFR
   - name: vostfr
     type: checkbox
-    label: Replace VOSTFR with ENGLISH
+    label: Replace VOSTFR and SUBFRENCH with ENGLISH
     default: false
-
-login:
-  method: cookie
-  inputs:
-    cookie: "{{ .Config.cookie }}"
 
 download:
   selectors:
@@ -101,81 +71,79 @@ search:
   paths:
     - path: "{{ if .Keywords }}index.php?do=search&subaction=search{{ else }}{{ end }}"
       method: post
+  # postData is mandatory FlareSolverr/FlareSolverr#789
+  allowEmptyInputs: true
   inputs:
     story: "{{ if .Keywords }}{{ .Keywords }}{{ else }}{{ end }}"
   # does not support imdbid search and does not return imdb link in results.
+
   keywordsfilters:
-    # if searching for season packs swith S01 to saison 1 #9712
+    # if searching for season packs with S01 to saison 1 #9712
     - name: re_replace
-      args: ["(?i)(S0)(\\d{1,2})$", "saison $2"]
-    - name: re_replace
-      args: ["(?i)(S)(\\d{1,3})$", "saison $2"]
+      args: ["(?i)\\b(?:S0?)(\\d{1,3})\\b", "saison $1"]
+
+  headers:
+    # site blocks Linux UAs, so slightly alter the Windows UA here (e.g. Safari/537.36 > Safari/537.35)
+    User-Agent: ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.35"]
 
   rows:
-    selector: div#gauche > table > tbody > tr:has(a)
+    selector: div#gauche > table > tbody > tr:has(a), div#dle-content > a.cover2
 
   fields:
     category:
       text: Other
-    site_date:
+    title_phase1_title:
       selector: a
+    title_phase1_url:
+      selector: a
+      attribute: href
       filters:
-        # date is at the end of the title, so we get it and name it site_date
         - name: regexp
-          args: "(19|20\\d{2})$"
+          args: torrents\d+\/(.+?)\/
+        - name: replace
+          args: ["-", " "]
     title_phase1:
-      selector: a
+      text: "{{ if .Result.title_phase1_title }}{{ .Result.title_phase1_title }}{{ else }}{{ .Result.title_phase1_url }}{{ end }}"
       filters:
-        # now we put the date at the right place according scene naming rules using .Result.site_date
         - name: re_replace
-          args: ["(?i)( FRENCH)", " {{ .Result.site_date }} FRENCH"]
-        - name: re_replace
-          args: ["(?i)( MULTI)", " {{ .Result.site_date }} MULTI"]
-        - name: re_replace
-          args: ["(?i)( TRUEFRENCH)", " {{ .Result.site_date }} TRUEFRENCH"]
-        - name: re_replace
-          args: ["(?i)( VOSTFR)", " {{ .Result.site_date }} VOSTFR"]
-        - name: re_replace
-          args: ["(?i)( SUBFRENCH)", " {{ .Result.site_date }} SUBFRENCH"]
-        # and we delete it at the end
-        - name: re_replace
-          args: ["(19|20\\d{2})$", ""]
-    title_multilang:
+          args: ["(?i)\\b(FRENCH|MULTI|TRUEFRENCH|VOSTFR|SUBFRENCH)\\b(.+?)(\\b(19|20\\d{2})\\b)$", "$3 $1$2"]
+    title_vostfr:
       text: "{{ .Result.title_phase1 }}"
       filters:
         - name: re_replace
-          args: ["(?i)(\\smulti\\s)", " {{ .Config.multilanguage }} "]
+          args: ["(?i)\\b(vostfr|subfrench)\\b", "ENGLISH"]
     title_phase2:
-      text: "{{ if .Config.multilang }}{{ .Result.title_multilang }}{{ else }}{{ .Result.title_phase1 }}{{ end }}"
-    title_vostfr:
+      text: "{{ if .Config.vostfr }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase1 }}{{ end }}"
+    title_multilang:
       text: "{{ .Result.title_phase2 }}"
       filters:
         - name: re_replace
-          args: ["(?i)(\\svostfr\\s)", " ENGLISH "]
-        - name: re_replace
-          args: ["(?i)(\\ssubfrench\\s)", " ENGLISH "]
+          args: ["(?i)\\b(MULTI(?!.*(?:FRENCH|ENGLISH|VOSTFR)))\\b", "{{ .Config.multilanguage }}"]
     title:
-      text: "{{ if .Config.vostfr }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
+      text: "{{ if .Config.multilang }}{{ .Result.title_multilang }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
     details:
       selector: a
       attribute: href
     download:
       selector: a
       attribute: href
+    poster:
+      selector: img
+      attribute: src
     size:
       selector: div.poid
+      optional: true
+      default: "512 MB"
     date:
       text: now
     seeders:
-      text: 0
-    seeders:
       selector: div.up
       optional: true
-    leechers:
-      text: 0
+      default: 0
     leechers:
       selector: div.down
       optional: true
+      default: 0
     downloadvolumefactor:
       text: 0
     uploadvolumefactor:

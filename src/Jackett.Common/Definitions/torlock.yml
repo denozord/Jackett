@@ -5,36 +5,33 @@ description: "Torlock is a torrent search site that lists verified torrents only
 language: en-US
 type: public
 encoding: UTF-8
-followredirect: true
+requestDelay: 2
 links:
   - https://www.torlock.com/
   - https://www.torlock2.com/
-  - https://www.torlock.icu/
-  - https://torlock.unblockit.ws/
-  - https://torlock.nocensor.work/
+  - https://torlock.unblockit.download/
 legacylinks:
   - https://torlock.com/
-  - https://torlock.unblockit.pro/
-  - https://torlock.unblockit.one/
-  - https://torlock.unblockit.me/
-  - https://torlock.unblockit.pw/
-  - https://torlock.unblockit.id/
-  - https://torlock.unblockit.win/
-  - https://torlock.unblockit.top/
-  - https://torlock.unblockit.lat/
-  - https://torlock.unblockit.app/
-  - https://torlock.unblockit.dev/
-  - https://torlock.unblockit.ltd/
-  - https://torlock.unblockit.link/
-  - https://torlock.unblockit.buzz/
-  - https://torlock.unblockit.club/
-  - https://torlock.unblockit.onl/
-  - https://torlock.unblockit.li/
-  - https://torlock.unblockit.uno/
-  - https://torlock.unblockit.ch/
-  - https://torlock.nocensor.space/
+  - https://www.torlock.icu/
+  - https://torlock.unblockit.rsvp/
+  - https://torlock.unblockit.vegas/
+  - https://torlock.unblockit.esq/
+  - https://torlock.unblockit.zip/
+  - https://torlock.unblockit.foo/
+  - https://torlock.unblockit.ing/
+  - https://torlock.nocensor.cloud/
+  - https://torlock.mrunblock.bond/
+  - https://torlock.unblockit.date/
+  - https://torlock.unblockit.dad/
+  - https://torlock.unblockit.africa/
+  - https://torlock.unblockit.casa/
+  - https://torlock.unblockit.sbs/
+  - https://torlock.unblockit.ong/
+  - https://torlock.unblockit.black/
+  - https://torlock.unblockit.meme/
 
 caps:
+  # dont forget to update the search fields category case block
   categorymappings:
     - {id: TELEVISION, cat: TV, desc: "TV Shows"}
     - {id: MOVIES, cat: Movies, desc: "Movies"}
@@ -74,7 +71,7 @@ settings:
 
 search:
   paths:
-    - path: "{{ if .Keywords }}/all/torrents/{{ .Keywords }}.html?sort={{ .Config.sort }}&order={{ .Config.type }}{{ else }}/fresh.html{{ end }}"
+    - path: "/all/torrents/{{ if .Keywords }}{{ .Keywords }}{{ else }}{{ .Today.Year }}{{ end }}.html?sort={{ .Config.sort }}&order={{ .Config.type }}"
       categories: ["!", TELEVISION, MOVIES, MUSIC, GAMES, SOFTWARE, ANIME, EBOOKS, OTHER, ADULT, AUDIOBOOK, IMAGES]
     - path: "{{ if .Keywords }}/television/torrents/{{ .Keywords }}.html?sort={{ .Config.sort }}&order={{ .Config.type }}{{else}}/television/1/{{ .Config.sort }}/{{ .Config.type }}.html{{end}}"
       categories: [TELEVISION]
@@ -141,26 +138,28 @@ search:
           args: (^/tor/\d*)
         - name: append
           args: ".torrent"
-    date:
+    date_year:
       selector: td:nth-child(2):contains("/")
       optional: true
       filters:
         - name: append
           args: " -07:00" # PDT
         - name: dateparse
-          args: "1/2/2006 -07:00"
-    date:
+          args: "M/d/yyyy zzz"
+    date_day:
       selector: td:nth-child(2):contains("Today"), td:nth-child(2):contains("Yesterday")
       optional: true
       filters:
         - name: fuzzytime
-    date:
+    date_ago:
       selector: td:nth-child(2):not(:contains("Today")):not(:contains("Yesterday")):not(:contains("/"))
       optional: true
       filters:
         - name: re_replace
           args: ["(min|mins)", "minutes"]
         - name: timeago
+    date:
+      text: "{{ if or .Result.date_year .Result.date_ago .Result.date_day }}{{ or .Result.date_year  .Result.date_ago .Result.date_day }}{{ else }}now{{ end }}"
     size:
       selector: td:nth-child(3)
     seeders:

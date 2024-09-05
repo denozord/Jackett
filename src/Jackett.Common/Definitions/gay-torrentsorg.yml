@@ -58,6 +58,7 @@ caps:
     - {id: 23, cat: XXX, desc: "Chubs"}
     - {id: 25, cat: XXX, desc: "Cross Generation"}
     - {id: 51, cat: XXX, desc: "Doctor/Medical"}
+    - {id: 71, cat: XXX, desc: "Fan Sites"}
     - {id: 27, cat: XXX, desc: "Fetish"}
     - {id: 28, cat: XXX, desc: "Group Sex"}
     - {id: 30, cat: XXX, desc: "Hunks"}
@@ -82,11 +83,10 @@ caps:
     - {id: 41, cat: Movies, desc: "Non-Porn"}
     - {id: 41, cat: TV, desc: "Non-Porn"}
     - {id: 41, cat: Other, desc: "Non-Porn"}
-    - {id: 71, cat: XXX, desc: "Fan Sites"}
 
   modes:
     search: [q]
-    tv-search: [q]
+    tv-search: [q, season, ep]
     movie-search: [q]
     book-search: [q]
 
@@ -99,17 +99,20 @@ login:
   error:
     - selector: div.fixed_width:nth-child(4) > span:contains("Incorrect")
   test:
-    path: usercp.php
+    path: index.php
+    selector: a[href*="logout.php"]
 
 search:
   paths:
+    # https://gay-torrents.org/torrents_beta.php?search=&active=0&options=0
     - path: torrents_beta.php
-      method: get
   inputs:
     $raw: "{{ range .Categories }}category[]={{.}}&{{end}}"
     search: "{{ .Keywords }}"
     # 0 all, 1 active, 2 dead, 3 free, 4 50%free, 5 25%free, 6 packs
     active: "{{ if .Config.freeleech }}3{{ else }}0{{ end }}"
+    # 0 title & tag, 1 title & descr
+    options: 0
     order: "{{ .Config.sort }}"
     by: "{{ .Config.order }}"
 
@@ -117,30 +120,28 @@ search:
     selector: div.torrent
 
   fields:
-    title:
-      selector: div:nth-child(2) > div:nth-child(1) > a:nth-child(1)
     category:
       selector: a[href^="torrents_beta.php?category="]
       attribute: href
       filters:
         - name: querystring
           args: category
+    title:
+      selector: a.torrent_link
     details:
-      selector: a[href^="details.php?id="]
+      selector: a.torrent_link
       attribute: href
     poster:
       selector: a.screenshot
       attribute: rel
+    download:
+      selector: a[href^="download.php?id="]
+      attribute: href
     grabs:
       selector: div.downloadTimes
       filters:
         - name: replace
           args: ["No downloads yet", "0"]
-        - name: regexp
-          args: ([\d,]+)
-    download:
-      selector: a[href^="download.php?id="]
-      attribute: href
     size:
       selector: div.size
     seeders:
@@ -153,9 +154,9 @@ search:
         - name: re_replace
           args: ["on (\\d{2}:\\d{2}) (\\d{2})-([a-zA-Z]{3})-(\\d{4})", "$2 $3 $4 $1"]
         - name: append
-          args: " +01:00"
+          args: " +01:00" # CET
         - name: dateparse
-          args: "02 Jan 2006 15:04 -07:00"
+          args: "dd MMM yyyy HH:mm zzz"
     downloadvolumefactor:
       case:
         "div:nth-child(2) > div:nth-child(3) > a:contains(\"FREE!\")": 0
@@ -164,4 +165,9 @@ search:
         "*": 1
     uploadvolumefactor:
       text: 1
-# engine tbd
+    minimumratio:
+      text: 1.0
+    minimumseedtime:
+      # 36 hours (as seconds = 36 x 60 x 60)
+      text: 129600
+# engine n/a

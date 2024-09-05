@@ -30,12 +30,14 @@ namespace Jackett.Common.Models
     public class IndexerDefinition
     {
         public string Id { get; set; }
+        public List<string> Replaces { get; set; } = new List<string>();
         public List<settingsField> Settings { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Type { get; set; }
         public string Language { get; set; }
         public string Encoding { get; set; }
+        public double? RequestDelay { get; set; }
         public List<string> Links { get; set; }
         public List<string> Legacylinks { get; set; }
         public bool Followredirect { get; set; } = false;
@@ -71,6 +73,7 @@ namespace Jackett.Common.Models
         public Dictionary<string, string> Categories { get; set; }
         public List<CategorymappingBlock> Categorymappings { get; set; }
         public Dictionary<string, List<string>> Modes { get; set; }
+        public bool Allowrawsearch { get; internal set; }
     }
 
     public class captchaBlock
@@ -94,6 +97,7 @@ namespace Jackett.Common.Models
         public List<errorBlock> Error { get; set; }
         public pageTestBlock Test { get; set; }
         public captchaBlock Captcha { get; set; }
+        public Dictionary<string, List<string>> Headers { get; set; }
     }
 
     public class errorBlock
@@ -107,6 +111,7 @@ namespace Jackett.Common.Models
     {
         public string Selector { get; set; }
         public bool Optional { get; set; } = false;
+        public string Default { get; set; }
         public string Text { get; set; }
         public string Attribute { get; set; }
         public string Remove { get; set; }
@@ -137,6 +142,7 @@ namespace Jackett.Common.Models
         public List<searchPathBlock> Paths { get; set; }
         public Dictionary<string, List<string>> Headers { get; set; }
         public List<filterBlock> Keywordsfilters { get; set; }
+        public bool AllowEmptyInputs { get; set; }
         public Dictionary<string, string> Inputs { get; set; }
         public List<errorBlock> Error { get; set; }
         public List<filterBlock> Preprocessingfilters { get; set; }
@@ -149,6 +155,9 @@ namespace Jackett.Common.Models
         public int After { get; set; }
         //public string Remove { get; set; } // already inherited
         public selectorBlock Dateheaders { get; set; }
+        public selectorBlock Count { get; set; }
+        public bool Multiple { get; set; } = false;
+        public bool MissingAttributeEqualsNoResults { get; set; } = false;
     }
 
     public class searchPathBlock : requestBlock
@@ -156,6 +165,7 @@ namespace Jackett.Common.Models
         public List<string> Categories { get; set; } = new List<string>();
         public bool Inheritinputs { get; set; } = true;
         public bool Followredirect { get; set; } = false;
+        public responseBlock Response { get; set; }
     }
 
     public class requestBlock
@@ -175,7 +185,7 @@ namespace Jackett.Common.Models
     {
         public selectorField Hash { get; set; }
         public selectorField Title { get; set; }
-        public bool Before { get; set; } = false;
+        public bool Usebeforeresponse { get; set; } = false;
     }
 
     public class downloadBlock
@@ -184,12 +194,20 @@ namespace Jackett.Common.Models
         public string Method { get; set; }
         public beforeBlock Before { get; set; }
         public infohashBlock Infohash { get; set; }
+        public Dictionary<string, List<string>> Headers { get; set; }
     }
 
     public class selectorField
     {
         public string Selector { get; set; }
         public string Attribute { get; set; }
+        public bool Usebeforeresponse { get; set; } = false;
         public List<filterBlock> Filters { get; set; }
+    }
+
+    public class responseBlock
+    {
+        public string Type { get; set; }
+        public string NoResultsMessage { get; set; }
     }
 }

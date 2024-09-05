@@ -5,13 +5,20 @@ description: "kickasstorrents.to is a Public KickAssTorrent clone for TV / MOVIE
 language: en-US
 type: public
 encoding: UTF-8
+requestDelay: 2
 links:
   - https://kickasstorrents.to/
   - https://kickasstorrent.cr/
   - https://katcr.to/
   - https://kickasstorrents.unblockninja.com/
+  - https://kickasstorrents.ninjaproxy1.com/
+  - https://kickasstorrents.proxyninja.org/
+  - https://kickasstorrents.proxyninja.net/
+  - https://kickass.torrentbay.st/
+  - https://kickass.torrentsbay.org/
 legacylinks:
   - https://kat.root.yt/
+  - https://kickasstorrents.abcproxy.org/
 
 caps:
   categorymappings:
@@ -66,6 +73,8 @@ search:
 
   rows:
     selector: table.data tr.odd:has(a[class="cellMainLink"]), table.data tr.even:has(a[class="cellMainLink"])
+    filters:
+      - name: andmatch
 
   fields:
     category:

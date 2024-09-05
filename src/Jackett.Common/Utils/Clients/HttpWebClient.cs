@@ -49,6 +49,8 @@ namespace Jackett.Common.Utils.Clients
             return sslPolicyErrors == SslPolicyErrors.None;
         }
 
+        public override void SetTimeout(int seconds) => ClientTimeout = seconds;
+
         public override void Init()
         {
             base.Init();
@@ -64,7 +66,10 @@ namespace Jackett.Common.Utils.Clients
         {
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)192 | (SecurityProtocolType)768 | (SecurityProtocolType)3072;
 
-            var cookies = new CookieContainer();
+            var cookies = new CookieContainer
+            {
+                PerDomainCapacity = 100 // By default only 20 cookies are allowed per domain
+            };
             if (!string.IsNullOrWhiteSpace(webRequest.Cookies))
             {
                 // don't include the path, Scheme is needed for mono compatibility
@@ -77,8 +82,10 @@ namespace Jackett.Common.Utils.Clients
 
             using (var clearanceHandlr = new ClearanceHandler(serverConfig.FlareSolverrUrl))
             {
-                clearanceHandlr.UserAgent = BrowserUtil.ChromeUserAgent;
-                clearanceHandlr.MaxTimeout = 50000;
+                clearanceHandlr.MaxTimeout = serverConfig.FlareSolverrMaxTimeout;
+                clearanceHandlr.ProxyUrl = serverConfig.GetProxyUrl(false);
+                clearanceHandlr.ProxyUsername = serverConfig.ProxyUsername;
+                clearanceHandlr.ProxyPassword = serverConfig.ProxyPassword;
                 using (var clientHandlr = new HttpClientHandler
                 {
                     CookieContainer = cookies,
@@ -92,6 +99,7 @@ namespace Jackett.Common.Utils.Clients
                     clearanceHandlr.InnerHandler = clientHandlr;
                     using (var client = new HttpClient(clearanceHandlr))
                     {
+                        client.Timeout = TimeSpan.FromSeconds(ClientTimeout);
                         using (var request = new HttpRequestMessage())
                         {
                             request.Headers.ExpectContinue = false;
@@ -154,10 +162,9 @@ namespace Jackett.Common.Utils.Clients
                                 };
 
                                 foreach (var header in response.Headers)
-                                {
-                                    var value = header.Value;
-                                    result.Headers[header.Key.ToLowerInvariant()] = value.ToArray();
-                                }
+                                    result.Headers[header.Key.ToLowerInvariant()] = header.Value.ToArray();
+                                foreach (var header in response.Content.Headers)
+                                    result.Headers[header.Key.ToLowerInvariant()] = header.Value.ToArray();
 
                                 // some cloudflare clients are using a refresh header
                                 // Pull it out manually

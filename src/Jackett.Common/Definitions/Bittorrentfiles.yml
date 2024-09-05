@@ -27,7 +27,7 @@ caps:
     - {id: 79, cat: TV/HD, desc: "Staffeln HD"}
     - {id: 56, cat: TV/SD, desc: "Staffeln SD"}
     - {id: 88, cat: TV/UHD, desc: "Staffeln UHD"}
-    - {id: 86, cat: TV/HD, desc: "Folgen UHD"}
+    - {id: 86, cat: TV/UHD, desc: "Folgen UHD"}
     - {id: 54, cat: TV/HD, desc: "Folgen HD"}
     - {id: 80, cat: TV/HD, desc: "Folgen HD/BD"}
     - {id: 7, cat: TV/SD, desc: "Folgen SD"}
@@ -68,7 +68,7 @@ caps:
     - {id: 74, cat: TV/Sport, desc: "Sport HD"}
     - {id: 39, cat: TV/Sport, desc: "Sport SD"}
     # Sonstiges
-    - {id: 41, cat: Books/Comics, desc: "Sonstiges A-Book"}
+    - {id: 41, cat: Audio/Audiobook, desc: "Sonstiges A-Book"}
     - {id: 33, cat: TV/Anime, desc: "Sonstiges Anime"}
     - {id: 35, cat: Books/EBook, desc: "Sonstiges e-Book-DE"}
     - {id: 90, cat: Books/EBook, desc: "Sonstiges e-Book-INT"}
@@ -79,13 +79,11 @@ caps:
     - {id: 47, cat: Other, desc: "Sonstiges Line"}
     - {id: 9, cat: Other, desc: "Sonstiges Andere"}
     # XXX
-    - {id: 58, cat: Books/Comics, desc: "XXX HD"}
+    - {id: 58, cat: XXX/x264, desc: "XXX HD"}
     - {id: 46, cat: XXX, desc: "XXX Hentai"}
-    - {id: 35, cat: XXX/Other, desc: "XXX Andere"}
     - {id: 59, cat: XXX/Pack, desc: "XXX Pack"}
-    - {id: 27, cat: XXX, desc: "XXX SD"}
+    - {id: 27, cat: XXX/SD, desc: "XXX SD"}
     - {id: 76, cat: XXX, desc: "XXX Andere"}
-
 
   modes:
     search: [q]
@@ -129,18 +127,23 @@ settings:
     type: info
     label: Results Per Page
     default: For best results, change the <b>Torrents per page:</b> setting to <b>100</b> on your account profile.
+  - name: info_activity
+    type: info
+    label: Account Inactivity
+    default: "Inactive accounts of users, power users and mega users will be permanently deleted from the database after 125 days! Torrents in your share don't count as activity - only logging in again counts! You can extend this period to 250 days by setting your account to parking. You can find the option to do this under Edit Profile."
 
 login:
   path: signin.php
-  method: form
-  form: form
+  method: post
   inputs:
     user: "{{ .Config.user }}"
     pass: "{{ .Config.pass }}"
+    returnto: "%2Fbrowse.php"
   error:
     - selector: .error
   test:
-    path: browse.php
+    path: index.php
+    selector: a[href^="/logout.php?c="]
 
 search:
   path: browse.php
@@ -158,15 +161,15 @@ search:
     selector: table.tableinborder > tbody > tr:has(a[href^="/download.php"])
 
   fields:
-    title:
-      selector: a[href^="details.php"]
-      attribute: title
     category:
       selector: a[href^="/browse.php?cat="]
       attribute: href
       filters:
         - name: querystring
           args: cat
+    title:
+      selector: a[href^="details.php"]
+      attribute: title
     details:
       selector: a[href^="details.php"]
       attribute: href
@@ -174,29 +177,25 @@ search:
       selector: a[href^="/download.php"]
       attribute: href
     grabs:
-      text: 0
-    grabs:
       selector: a[title="Snatcher"]
       optional: true
-    files:
-      text: 0
+      default: 0
     files:
       selector: a[title="Files"]
       optional: true
+      default: 0
     size:
       selector: td:nth-child(6)
     seeders:
-      text: 0
-    seeders:
       selector: a[title="Seeder"]
       optional: true
-    leechers:
-      text: 0
+      default: 0
     leechers:
       selector: a[title="Leecher"]
       optional: true
+      default: 0
       # 2 flavours of dates
-    date:
+    date_day:
       # Heute 13:30:04
       # Gestern 09:10:10
       selector: td:nth-child(10):contains("Heute"),  td:nth-child(10):contains("Gestern")
@@ -209,8 +208,8 @@ search:
         - name: replace
           args: ["Gestern", "Yesterday"]
         - name: append
-          args: " +01:00" # CET
-    date:
+          args: "+01:00" # CET
+    date_year:
       # 30.02.2018 23:12:50
       selector: td:nth-child(10):contains("."):contains(":")
       optional: true
@@ -218,9 +217,11 @@ search:
         - name: split
           args: ["b", 0]
         - name: append
-          args: " +01:00" # CET
+          args: "+01:00" # CET
         - name: dateparse
-          args: "02.01.2006 15:04:05 -07:00"
+          args: "dd.MM.yyyy HH:mm:ss zzz"
+    date:
+      text: "{{ if or .Result.date_year .Result.date_day }}{{ or .Result.date_year .Result.date_day }}{{ else }}now{{ end }}"
     downloadvolumefactor:
       case:
         img[alt="OU"]: 0

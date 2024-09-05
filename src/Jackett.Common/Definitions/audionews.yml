@@ -161,6 +161,7 @@ caps:
     - {id: 201, cat: Audio/Other, desc: "PRESETS Xfer Serum"}
     - {id: 164, cat: Audio/Other, desc: "PRESETS Sylenth"}
     - {id: 168, cat: Audio/Other, desc: "PRESETS Toontrack"}
+    - {id: 239, cat: Books, desc: "Service Manuals"}
     - {id: 21, cat: Other, desc: "UPDATE"}
     - {id: 222, cat: Other, desc: "GFXNEWS 3D"}
     - {id: 235, cat: Other, desc: "GFXNEWS APPS ANDROID & IOS"}
@@ -175,17 +176,23 @@ caps:
     - {id: 233, cat: Other, desc: "GFXNEWS GAME DEVELOPMENT"}
     - {id: 226, cat: Other, desc: "GFXNEWS MAGAZINE"}
     - {id: 234, cat: Other, desc: "GFXNEWS MATERIAL"}
+    - {id: 243, cat: Other, desc: "GFXNEWS OTHER GRAPHICS"}
+    - {id: 244, cat: Other, desc: "GFXNEWS OTHER GRAPHICS Zbrush, Substance tools"}
     - {id: 216, cat: Other, desc: "GFXNEWS PHOTOSTOCK"}
     - {id: 220, cat: Other, desc: "GFXNEWS PHOTOGRAPHY - ART"}
-    - {id: 227, cat: Other, desc: "GFXNEWS PHOTOSHOP"}
-    - {id: 228, cat: Other, desc: "GFXNEWS PHOTOSHOP Actions, Pattern & Styles"}
-    - {id: 229, cat: Other, desc: "GFXNEWS PHOTOSHOP Background & PSD Source"}
-    - {id: 230, cat: Other, desc: "GFXNEWS PHOTOSHOP Brushes & Gradient"}
-    - {id: 231, cat: Other, desc: "GFXNEWS PHOTOSHOP Toolkits, Papers & Objects"}
-    - {id: 225, cat: Other, desc: "GFXNEWS PLUGINS LINUX"}
-    - {id: 223, cat: Other, desc: "GFXNEWS PLUGINS MAC"}
+    - {id: 227, cat: Other, desc: "GFXNEWS 2D Graphics"}
+    - {id: 250, cat: Other, desc: "GFXNEWS 2D Graphics Effects"}
+    - {id: 228, cat: Other, desc: "GFXNEWS 2D Graphics Actions, Pattern & Styles"}
+    - {id: 229, cat: Other, desc: "GFXNEWS 2D Graphics Background & PSD Source"}
+    - {id: 230, cat: Other, desc: "GFXNEWS 2D Graphics Brushes & Gradient"}
+    - {id: 246, cat: Other, desc: "GFXNEWS 2D Graphics Mockup"}
+    - {id: 247, cat: Other, desc: "GFXNEWS 2D Graphics Overlays"}
+    - {id: 249, cat: Other, desc: "GFXNEWS 2D Graphics Preset"}
+    - {id: 231, cat: Other, desc: "GFXNEWS 2D Graphics Toolkits, Papers & Objects"}
+    - {id: 245, cat: Other, desc: "GFXNEWS GFX Plugins"}
     - {id: 210, cat: Other, desc: "GFXNEWS PLUGINS WIN"}
-    - {id: 236, cat: Other, desc: "GFXNEWS POSER"}
+    - {id: 223, cat: Other, desc: "GFXNEWS PLUGINS MAC"}
+    - {id: 225, cat: Other, desc: "GFXNEWS PLUGINS LINUX"}
     - {id: 217, cat: Other, desc: "GFXNEWS SCRIPTS - WEB PROGRAMMING"}
     - {id: 218, cat: Other, desc: "GFXNEWS TEMPLATES"}
     - {id: 232, cat: Other, desc: "GFXNEWS TEXTURES"}
@@ -220,6 +227,10 @@ settings:
     options:
       2: desc
       1: asc
+  - name: info_activity
+    type: info
+    label: Account Inactivity
+    default: "You must stay active on the site...<ol><li>Any New users that have no stats for one month will have their account deleted</li><li>Any disabled accounts will be deleted after 6 months</li><li>Any accounts inactive for more than 6 months will be deleted</li><li>Donor accounts will be left untouched.</li></ol>"
 
 login:
   path: login.php
@@ -277,7 +288,7 @@ search:
         - name: append
           args: " -07:00" # PDT
         - name: dateparse
-          args: "01-02-2006 -07:00"
+          args: "MM-dd-yyyy zzz"
 
   fields:
     title:
@@ -295,34 +306,25 @@ search:
         - name: querystring
           args: f
     size:
-      text: "0 B"
-    size:
+      selector: td:contains(\00a0GB), td:contains(\00a0MB), td:contains(\00a0KB), td:contains(\00a0B)
       optional: true
-      selector: td:contains(\00a0GB)
-    size:
-      optional: true
-      selector: td:contains(\00a0MB)
-    size:
-      optional: true
-      selector: td:contains(\00a0kB)
-    size:
-      optional: true
-      selector: td:contains(\00a0B)
+      default: 0
     seeders:
-      text: 0
-    seeders:
-      optional: true
       selector: td[title="Seeders"]
-    leechers:
-      text: 0
-    leechers:
       optional: true
+      default: 0
+    leechers:
       selector: td[title="Leechers"]
-    grabs:
-      text: 0
-    grabs:
       optional: true
+      default: 0
+    grabs:
       selector: td[title^="Replies:"]
+      optional: true
+      default: 0
+    description:
+      case:
+        span.tor-approved: Verified
+        span.tor-not-approved: Unverified
     downloadvolumefactor:
       text: 1
     uploadvolumefactor:

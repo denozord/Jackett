@@ -4,7 +4,7 @@
 ---
 id: femdomcult
 name: Femdomcult
-description: "Femdomcult is a Private Torrent Tracker for FETISH XXX"
+description: "Femdomcult is a Private Torrent Tracker for FETISH 3X"
 language: en-US
 type: private
 encoding: UTF-8
@@ -17,6 +17,7 @@ caps:
     - {id: 60, cat: XXX, desc: "Anime Comics"}
     - {id: 73, cat: XXX, desc: "Asian Femdom"}
     - {id: 61, cat: XXX, desc: "Audio"}
+    - {id: 78, cat: XXX, desc: "EBook"}
     - {id: 74, cat: XXX, desc: "Female Muscles"}
     - {id: 59, cat: XXX, desc: "Femdom"}
     - {id: 62, cat: XXX, desc: "Femdom Vip"}
@@ -32,11 +33,10 @@ caps:
     - {id: 66, cat: XXX, desc: "Transdom"}
     - {id: 77, cat: XXX, desc: "Unknown & Low Quality"}
     - {id: 75, cat: XXX, desc: "Virtual Reality"}
+    - {id: 0, cat: XXX/Other, desc: "Other"}
 
   modes:
     search: [q]
-    tv-search: [q]
-    movie-search: [q]
 
 settings:
   - name: username
@@ -45,6 +45,10 @@ settings:
   - name: password
     type: password
     label: Password
+  - name: freeleech
+    type: checkbox
+    label: Search freeleech only
+    default: false
   - name: sort
     type: select
     label: Sort requested from site
@@ -60,15 +64,19 @@ settings:
     options:
       desc: desc
       asc: asc
+  - name: info_activity
+    type: info
+    label: Account Inactivity
+    default: "User classes Beginner and Perv have to be inactive (= not logged in on the site, tracker activity/seeding does not count) for 4 months before getting disabled automatically. Member class and higher are exempt."
 
 login:
-  path: login.php
+  path: login
   method: form
   inputs:
     username: "{{ .Config.username }}"
     password: "{{ .Config.password }}"
     cinfo: "2550|1350|24|-60"
-    keeploggedin: 1
+    keeplogged: 1
   error:
     - selector: form#loginform > span.warning
   test:
@@ -84,19 +92,23 @@ search:
     order_by: "{{ .Config.sort }}"
     order_way: "{{ .Config.type }}"
     action: advanced
+    filter_freeleech: "{{ if .Config.freeleech }}1{{ else }}{{ end }}"
 
   rows:
-    # exclude redbar torrents
-    selector: table#torrent_table > tbody > tr[class^="torrent row"]
+    selector: table#torrent_table > tbody > tr[class^="torrent row"]:has(a[href*="action=download"])
 
   fields:
     download:
-      selector: a[href^="torrents.php?action=download&id="]
+      selector: a[href^="/torrents.php?action=download&id="]
       attribute: href
-    description:
+    description_tags:
       selector: div.tags
+    description:
+      case:
+        span.icon[title*="okay"]: "Verified: {{ .Result.description_tags }}"
+        "*": "Unverified: {{ .Result.description_tags }}"
     title:
-      selector: a[href^="torrents.php?id="]
+      selector: a[href^="/torrents.php?id="]
     category:
       selector: a[href*="filter_cat"]
       attribute: href
@@ -104,7 +116,7 @@ search:
         - name: regexp
           args: "(\\d+)]=1"
     details:
-      selector: a[href^="torrents.php?id="]
+      selector: a[href^="/torrents.php?id="]
       attribute: href
     poster:
       selector: td:nth-child(2) > script
@@ -112,22 +124,20 @@ search:
         - name: regexp
           args: "src=(.*?)>"
         - name: re_replace
-          args: ["\\\\(.)", "$1"]
+          args: ["[\\\\\"]", ""]
         - name: replace
           args: ["/static/common/noartwork/noimage.png", ""]
     files:
       selector: td:nth-child(3)
-    date: # some torrents have "Never" date
-      text: 20 years ago
     date:
       selector: td:nth-child(5) > span
       attribute: title
+      # auto adjusted by site account profile
       optional: true
+      default: "20 years ago" # some torrents have "Never" date
       filters:
-        - name: append
-          args: " +00:00" # auto adjusted by site account profile
         - name: dateparse
-          args: "Jan 02 2006, 15:04 -07:00"
+          args: "MMM dd yyyy, HH:mm"
     size:
       selector: td:nth-child(6)
     grabs:
@@ -141,5 +151,14 @@ search:
         "img[alt=\"Freeleech\"]": 0
         "*": 1
     uploadvolumefactor:
-      text: 1
+      case:
+        span.icon[title*="DoubleSeed"]: 2
+        "img[alt=\"DoubleSeed\"]": 2
+        "*": 1
+    minimumratio:
+      text: 0.5
+    # MR is reduced but not removed if MST is met
+    # minimumseedtime:
+    #   # 3 days (as seconds = 3 x 24 x 60 x 60)
+    #   text: 259200
 # luminance

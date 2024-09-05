@@ -92,6 +92,7 @@ login:
     - selector: td.embedded:has(h2:contains("failed"))
   test:
     path: browse_old.php
+    selector: a[href="/logout.php"]
 
 search:
   paths:
@@ -125,7 +126,7 @@ search:
       filters:
         - name: replace
           args: ["details.php", "download.php"]
-    imdb:
+    imdbid:
       selector: a[href*="imdb.com/title/tt"]
       attribute: href
     size:

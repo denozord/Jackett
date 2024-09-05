@@ -5,44 +5,43 @@ description: "Carp-Hunter is a HUNGARIAN Private Torrent Tracker for MOVIES / TV
 language: hu-HU
 type: private
 encoding: UTF-8
+requestDelay: 2
 links:
   - https://carp-hunter.hu/
 
 caps:
   categorymappings:
-    - {id: 5, cat: Movies/BluRay, desc: "Film/BDRip/Eng"}
-    - {id: 6, cat: Movies/BluRay, desc: "Film/BDRip/Hun"}
-    - {id: 1, cat: Movies/SD, desc: "Film/Cam/Eng"}
-    - {id: 2, cat: Movies/SD, desc: "Film/Cam/Hun"}
-    - {id: 8, cat: Movies/DVD, desc: "Film/DVD/Eng"}
-    - {id: 7, cat: Movies/DVD, desc: "Film/DVD/Hun"}
-    - {id: 16, cat: Movies/HD, desc: "Film/HD1080P/Eng"}
-    - {id: 15, cat: Movies/HD, desc: "Film/HD1080P/Hun"}
-    - {id: 14, cat: Movies/HD, desc: "Film/HD720P/Eng"}
-    - {id: 13, cat: Movies/HD, desc: "Film/HD720P/Hun"}
-    - {id: 18, cat: Movies/UHD, desc: "Film/UHD/Eng"}
-    - {id: 17, cat: Movies/UHD, desc: "Film/UHD/Hun"}
-    - {id: 4, cat: Movies/SD, desc: "Film/Xvid/Eng"}
-    - {id: 3, cat: Movies/SD, desc: "Film/Xvid/Hun"}
-    - {id: 23, cat: Audio/Audiobook, desc: "Hangosköny"}
-    - {id: 19, cat: PC/Games, desc: "Játék/ISO"}
-    - {id: 20, cat: PC/Games, desc: "Játék/RIP"}
-    - {id: 24, cat: Other, desc: "Képek"}
-    - {id: 21, cat: Books, desc: "Könyv/Eng"}
-    - {id: 22, cat: Books, desc: "Könyv/Hun"}
-    - {id: 35, cat: TV/Anime, desc: "Mese/Eng"}
-    - {id: 36, cat: TV/Anime, desc: "Mese/Hun"}
-    - {id: 25, cat: PC/Mobile-Other, desc: "Mobil"}
-    - {id: 30, cat: PC/ISO, desc: "Programok/ISO"}
-    - {id: 31, cat: PC/0day, desc: "Programok/RIP"}
-    - {id: 33, cat: TV, desc: "Sorozat/Eng"}
-    - {id: 32, cat: TV, desc: "Sorozat/Hun"}
-    - {id: 34, cat: XXX, desc: "XXX/Filmek"}
-    - {id: 39, cat: XXX, desc: "XXX/Képek"}
-    - {id: 29, cat: Audio/Lossless, desc: "Zene/FLAC/Eng"}
-    - {id: 28, cat: Audio/Lossless, desc: "Zene/FLAC/Hun"}
-    - {id: 27, cat: Audio/MP3, desc: "Zene/MP3/Eng"}
-    - {id: 26, cat: Audio/MP3, desc: "Zene/MP3/Hun"}
+    - {id: 1, cat: Movies/SD, desc: "Film/Cam/Eng", default: true}
+    - {id: 2, cat: Movies/SD, desc: "Film/Cam/Hun", default: true}
+    - {id: 8, cat: Movies/DVD, desc: "Film/DVD/Eng", default: true}
+    - {id: 7, cat: Movies/DVD, desc: "Film/DVD/Hun", default: true}
+    - {id: 16, cat: Movies/HD, desc: "Film/HD1080P/Eng", default: true}
+    - {id: 15, cat: Movies/HD, desc: "Film/HD1080P/Hun", default: true}
+    - {id: 14, cat: Movies/HD, desc: "Film/HD720P/Eng", default: true}
+    - {id: 13, cat: Movies/HD, desc: "Film/HD720P/Hun", default: true}
+    - {id: 4, cat: Movies/SD, desc: "Film/SD/Eng", default: true}
+    - {id: 3, cat: Movies/SD, desc: "Film/SD/Hun", default: true}
+    - {id: 18, cat: Movies/UHD, desc: "Film/UHD/Eng", default: true}
+    - {id: 17, cat: Movies/UHD, desc: "Film/UHD/Hun", default: true}
+    - {id: 23, cat: Audio/Audiobook, desc: "Hangosköny", default: true}
+    - {id: 19, cat: PC/Games, desc: "Játék/ISO", default: true}
+    - {id: 20, cat: PC/Games, desc: "Játék/RIP", default: true}
+    - {id: 24, cat: Other, desc: "Képek", default: true}
+    - {id: 21, cat: Books, desc: "Könyv/Eng", default: true}
+    - {id: 22, cat: Books, desc: "Könyv/Hun", default: true}
+    - {id: 35, cat: TV/Anime, desc: "Mese/Eng", default: true}
+    - {id: 36, cat: TV/Anime, desc: "Mese/Hun", default: true}
+    - {id: 25, cat: PC/Mobile-Other, desc: "Mobil", default: true}
+    - {id: 30, cat: PC/ISO, desc: "Programok/ISO", default: true}
+    - {id: 31, cat: PC/0day, desc: "Programok/RIP", default: true}
+    - {id: 33, cat: TV, desc: "Sorozat/Eng", default: true}
+    - {id: 32, cat: TV, desc: "Sorozat/Hun", default: true}
+    - {id: 29, cat: Audio/Lossless, desc: "Zene/FLAC/Eng", default: true}
+    - {id: 28, cat: Audio/Lossless, desc: "Zene/FLAC/Hun", default: true}
+    - {id: 27, cat: Audio/MP3, desc: "Zene/MP3/Eng", default: true}
+    - {id: 26, cat: Audio/MP3, desc: "Zene/MP3/Hun", default: true}
+    - {id: 34, cat: XXX, desc: "XXX/Filmek", default: false}
+    - {id: 39, cat: XXX/ImageSet, desc: "XXX/Képek", default: false}
 
   modes:
     search: [q]
@@ -52,12 +51,11 @@ caps:
     book-search: [q]
 
 settings:
-  - name: username
+  - name: cookie
     type: text
-    label: Username
-  - name: password
-    type: password
-    label: Password
+    label: Cookie
+  - name: info_cookie
+    type: info_cookie
   - name: freeleech
     type: checkbox
     label: Search freeleech only
@@ -77,25 +75,27 @@ settings:
     options:
       desc: desc
       asc: asc
+  - name: info_settings
+    type: info
+    label: Settings Requirement
+    default: This indexer only supports the details link option.<br>Navigate to the web site account <b>Beállítások (Settings)</b>, change the <b>Letöltések (Download)</b> option to <b>Link a részletekhez (Link to Details)</b>, and click <b>Mentés (Save)</b>. Selecting <i>Lenyíló menü (Dropdown Menu)</i> will return no results.
 
 login:
-  path: login.php?takelogin
-  method: post
+  method: cookie
   inputs:
-    username: "{{ .Config.username }}"
-    password: "{{ .Config.password }}"
-    two_factor_auth_code: ""
-    inactivity_: ""
-    returnto: /
-  error:
-    - selector: td.embedded:contains("Sikertelen bejelentkezés")
+    cookie: "{{ .Config.cookie }}"
   test:
-    path: letoltes.php
+    path: index.php
     selector: a[href^="logout.php"]
 
 search:
   paths:
-    - path: letoltes.php
+    - path: browse.php
+      categories: [1, 2, 8, 7, 16, 15, 14, 13, 4, 3, 18, 17, 23, 19, 20, 24, 21, 22, 35, 36, 25, 30, 31, 33, 32, 29, 28, 27, 26]
+    - path: browse.php
+      categories: [34, 39]
+      inputs:
+        xxx: 1
   keywordsfilters:
     # the site uses % for wildcard
     - name: re_replace
@@ -106,15 +106,16 @@ search:
     # 0 both, 1 onlyactive, 2 onlydead, 3 onlyfree, 4 x2 torrents, 5 mytorrents, 6 waiting for seeds
     incldead: "{{ if .Config.freeleech }}3{{ else }}0{{ end }}"
     sort: "{{ .Config.sort }}"
-    type: "{{ .Config.type }}"
+    order: "{{ .Config.type }}"
     # does not support imdbid searches
+    # can support genre searching but you need to know the id, eg &genre2=1 for Comedy (id is 2)
 
   rows:
-    selector: table[width="920px"] > tbody > tr:has(a[href^="letoltes.php?cat="])
+    selector: "table[cellpadding=\"3\"][style=\"width: 920px;\"] > tbody > tr:has(a[href^=\"browse.php?cat=\"])"
 
   fields:
     category:
-      selector: a[href^="letoltes.php?cat="]
+      selector: a[href^="browse.php?cat="]
       attribute: href
       filters:
         - name: querystring
@@ -131,25 +132,33 @@ search:
       filters:
         - name: replace
           args: ["/details", "/download"]
-    imdb:
+    imdbid:
       selector: a[href*="imdb.com/title/tt"]
       attribute: href
+    genre:
+      selector: small[title]
+      attribute: title
+    description:
+      case:
+        img[src="/pic/yes.png"]: "Verified: {{ .Result.genre }}"
+        img[src="/pic/nincs.png"]: "Unverified: {{ .Result.genre }}"
     poster:
       selector: a[onmouseover]
       attribute: onmouseover
       filters:
         - name: regexp
-          args: "src=(.*?) width"
+          args: "showTorrentThumb\\('(.*?)', "
     date:
-      selector: small
-      remove: font
+      selector: td:nth-last-child(8)
       filters:
+        - name: regexp
+          args: (\d{4}-\d{2}-\d{2}.\d{2}:\d{2}:\d{2})
         - name: replace
           args: ["\u00a0", " "]
         - name: append
           args: " +01:00" # CET
         - name: dateparse
-          args: "2006-01-02 15:04:05 -07:00"
+          args: "yyyy-MM-dd HH:mm:ss zzz"
     files:
       selector: td:nth-last-child(7)
     size:
@@ -167,6 +176,7 @@ search:
     uploadvolumefactor:
       case:
         font:contains("x2"): 2
+        font:contains("x4"): 4
         "*": 1
     minimumratio:
       text: 1.0

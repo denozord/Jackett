@@ -5,10 +5,11 @@ description: "Frozen Layer is a SPANISH Public torrent site focused on ANIME"
 language: es-ES
 type: public
 encoding: UTF-8
+requestDelay: 2
+certificates:
+  - 0e43335b4c778e95f8e4db46e20cc3d0e84e59ff  # expired 19 June 2024
 links:
   - https://www.frozen-layer.com/
-certificates:
-  - 5fc6a320560295f0d7589c9dd8738bfaed36c3aa # expired 20 December 2020
 
 settings:
   - name: category
@@ -41,12 +42,12 @@ caps:
 
   modes:
     search: [q]
-    tv-search: [q]
+    tv-search: [q, season, ep]
 
 search:
   paths:
     - path: "{{ if .Keywords }}buscar/descargas/{{ .Config.category }}/{{ .Keywords }}?search=Buscar{{ else }}descargas{{ end }}"
-    - path: "{{ if .Keywords }}buscar/descargas/{{ .Config.category }}/{{ .Keywords }}?search=Buscar&page=2{{ else }}descargas{{ end }}"
+    - path: "{{ if .Keywords }}buscar/descargas/{{ .Config.category }}/{{ .Keywords }}?search=Buscar&{{ else }}descargas?{{ end }}page=2"
   keywordsfilters:
     - name: re_replace # remove first season from search string
       args: ["(?i)(S1)", ""]
@@ -61,6 +62,8 @@ search:
     selector: table#descargas > tbody > tr:has(td:has(a[href^="magnet:?"]))
 
   fields:
+    category:
+      text: "{{ if eq .Config.category \"todos\" }}Anime{{ else }}{{ .Config.category }}{{ end }}"
     title:
       selector: td.tit a
       filters:
@@ -85,12 +88,7 @@ search:
     magnet:
       selector: td:nth-child(1) a[href^="magnet:?"]
       attribute: href
-    category:
-      text: Anime
-    category|noappend:
-      optional: true
-      selector: td.tit span
-    date:
+    date_day:
       # 1d
       # 2d 3h
       # 3 dias
@@ -101,15 +99,17 @@ search:
         - name: replace
           args: ["días", "days ago"]
         - name: timeago
-    date:
+    date_year:
       # 29 Oct 17
       optional: true
-      selector: td.fecha:not(:contains("d")):not(:contains("h"))
+      selector: td.fecha:not(:contains("d")):not(:contains("h")):not(:contains("m"))
       filters:
         - name: append
           args: " +01:00" # CET
         - name: dateparse
-          args: "02 Jan 06 -07:00"
+          args: "dd MMM yy zzz"
+    date:
+      text: "{{ if or .Result.date_year .Result.date_day }}{{ or .Result.date_year .Result.date_day }}{{ else }}now{{ end }}"
     size:
       selector: td:nth-child(6)
     seeders:

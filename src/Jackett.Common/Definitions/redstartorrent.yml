@@ -1,5 +1,7 @@
 ---
 id: redstartorrent
+replaces:
+  - rstorrent
 name: Red Star Torrent
 description: "Red Star Torrent (RST) is a POLISH Private Torrent Tracker for TV"
 language: pl-PL
@@ -82,7 +84,6 @@ search:
       selector: a[href^="/download.php/"]
       attribute: href
     description:
-      optional: true
       selector: img[src="/pic/pl.gif"]
       attribute: src
       filters:
@@ -90,15 +91,15 @@ search:
           args: "Language: polish\n<br>"
         - name: prepend
           args: "{{ .Result.description }}"
-    imdb:
+    imdbid:
       selector: a[href*="imdb.com/title/tt"]
+      attribute: href
     date:
       selector: td:nth-child(5)
+      # auto adjusted by site account profile
       filters:
-        - name: append
-          args: " +00:00" # auto adjusted by site account profile
         - name: dateparse
-          args: "2006-01-0215:04:05 -07:00"
+          args: "yyyy-MM-ddHH:mm:ss"
     grabs:
       selector: td:nth-child(7)
     size:

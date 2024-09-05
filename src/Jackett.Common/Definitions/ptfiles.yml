@@ -68,6 +68,10 @@ settings:
     options:
       desc: desc
       asc: asc
+  - name: info_activity
+    type: info
+    label: Account Inactivity
+    default: "You must login to the site at least every 119 days. If you get to the 120th day without logging in, your account will be Deleted/Pruned automatically by the system."
 
 login:
   path: loginproc/
@@ -78,10 +82,15 @@ login:
     password: "{{ .Config.password }}"
     force_ssl: on
     ssl: ""
+  selectorinputs:
+    hash:
+      selector: input[name="hash"]
+      attribute: value
   error:
     - selector: p.error:contains(strong)
   test:
-    path: browse.php
+    path: index.php
+    selector: a[href*="&logout_hash="]
 
 search:
   paths:
@@ -122,7 +131,7 @@ search:
     details:
       selector: a.torrentlink
       attribute: href
-    imdb:
+    imdbid:
       selector: a[href*="imdb.com/title/tt"]
       attribute: href
     files:
@@ -147,16 +156,18 @@ search:
           args: ["Uploaded: ", ""]
     downloadvolumefactor:
       case:
+        ":root:has(div.rounded_colhead2:contains(\"w00t It's Crazyhour!\"))": 0 # Freeleech hour
         "span.tool:contains(\"[FREE]\")": 0
         "*": 1
     uploadvolumefactor:
-      text: 1
-    description:
+      case:
+        ":root:has(div.rounded_colhead2:contains(\"w00t It's Crazyhour!\"))": 3 # Freeleech hour
+        "*": 1
+    genre:
       selector: td:nth-child(2) > span:has(span > small)
       remove: span:nth-child(1), span.tool, a[title^="Search all"], br ~ b > small
-      filters:
-        - name: trim
-          args: "/"
+    description:
+      text: "{{ .Result.genre }}"
     minimumratio:
       text: 1.0
     minimumseedtime:

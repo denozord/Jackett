@@ -14,14 +14,10 @@ caps:
 
   modes:
     search: [q]
-    tv-search: [q]
-    movie-search: [q]
 
 settings:
-  - name: flaresolverr
-    type: info
-    label: FlareSolverr
-    default: This site may use Cloudflare DDoS Protection, therefore Jackett requires <a href="https://github.com/Jackett/Jackett#configuring-flaresolverr" target="_blank">FlareSolver</a> to access it.
+  - name: info_flaresolverr
+    type: info_flaresolverr
 
 download:
   selectors:
@@ -33,7 +29,7 @@ download:
 
 search:
   paths:
-    - path: "{{ if .Keywords }}search/{{ re_replace .Keywords \"\\s+\" \"-\" }}{{ else }}torrents{{ end }}"
+    - path: "{{ if .Keywords }}s/{{ re_replace .Keywords \"\\s+\" \"-\" }}{{ else }}ts{{ end }}"
 
   rows:
     selector: div.torrents_list > div.torrent_element
@@ -44,13 +40,13 @@ search:
     category:
       text: XXX
     title:
-      selector: a[href^="/torrent/"]
+      selector: a[href^="/t/"]
       remove: i
     details:
-      selector: a[href^="/torrent/"]
+      selector: a[href^="/t/"]
       attribute: href
     download:
-      selector: a[href^="/torrent/"]
+      selector: a[href^="/t/"]
       attribute: href
     date:
       selector: div.torrent_element_info span:nth-child(2)

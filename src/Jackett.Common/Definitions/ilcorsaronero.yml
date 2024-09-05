@@ -5,13 +5,10 @@ description: "Il Corsaro Nero is an ITALIAN Public site for TV / MOVIES / GENERA
 language: it-IT
 type: public
 encoding: Windows-1252
-followredirect: true
+requestDelay: 2
 links:
   - https://ilcorsaronero.link/
-  - https://ilcorsaronero.fun/
-  - https://ilcorsaronero.pro/
-  - https://ilcorsaronero.torrentbay.to/
-  - https://ilcorsaronero.nocensor.work/
+  - https://ilcorsaronero.torrentbay.st/
 legacylinks:
   - https://ilcorsaronero.live/
   - https://ilcorsaronero.vip/
@@ -20,12 +17,13 @@ legacylinks:
   - https://ilcorsaronero.cc/
   - https://ilcorsaronero.pizza/
   - https://ilcorsaronero.pw/
-  - https://ilcorsaronero.unblockit.pro/
-  - https://ilcorsaronero.unblockit.one/
   - https://ilcorsaronero.xyz/
-  - https://ilcorsaronero.unblockit.me/
-  - https://ilcorsaronero.unblockit.pw/
-  - https://ilcorsaronero.nocensor.space/
+  - https://ilcorsaronero.torrentbay.to/
+  - https://ilcorsaronero.fun/
+  - https://ilcorsaronero.pro/
+  - https://ilcorsaronero.torrentbay.net/
+  - https://ilcorsaronero.mrunblock.bond/
+  - https://ilcorsaronero.nocensor.cloud/
 
 caps:
   categorymappings:
@@ -131,7 +129,7 @@ search:
     details:
       selector: td:nth-child(4) a
       attribute: href
-    download-itorrents:
+    download_itorrents:
       selector: input.downarrow
       attribute: value
       filters:
@@ -140,7 +138,7 @@ search:
         - name: append
           args: ".torrent"
     download:
-      text: "{{ if .Config.itorrents-links }}{{ .Result.download-itorrents }}{{ else }}{{ end }}"
+      text: "{{ if .Config.itorrents-links }}{{ .Result.download_itorrents }}{{ else }}{{ end }}"
     infohash:
       selector: input.downarrow
       attribute: value
@@ -152,7 +150,7 @@ search:
         - name: append
           args: " +01:00" # CET
         - name: dateparse
-          args: "02.01.06 -07:00"
+          args: "dd.MM.yy zzz"
     seeders:
       selector: td:nth-child(6) font
       filters:

@@ -27,7 +27,7 @@ caps:
 
   modes:
     search: [q]
-    tv-search: [q]
+    tv-search: [q, season, ep]
     movie-search: [q]
     music-search: [q]
 
@@ -35,10 +35,8 @@ settings:
   - name: cookie
     type: text
     label: Cookie
-  - name: info
-    type: info
-    label: How to get the Cookie
-    default: "<ol><li>Login to this tracker with your browser<li>Open the <b>DevTools</b> panel by pressing <b>F12</b><li>Select the <b>Network</b> tab<li>Click on the <b>Doc</b> button (Chrome Browser) or <b>HTML</b> button (FireFox)<li>Refresh the page by pressing <b>F5</b><li>Click on the first row entry<li>Select the <b>Headers</b> tab on the Right panel<li>Find <b>'cookie:'</b> in the <b>Request Headers</b> section<li><b>Select</b> and <b>Copy</b> the whole cookie string <i>(everything after 'cookie: ')</i> and <b>Paste</b> here.</ol>"
+  - name: info_cookie
+    type: info_cookie
   - name: freeleech
     type: checkbox
     label: Search freeleech only
@@ -65,10 +63,8 @@ login:
   inputs:
     cookie: "{{ .Config.cookie }}"
   test:
-    path: index.php
-  test:
     path: /
-    selector: a[href="account-logout.php"]
+    selector: a[href^="torrents-details.php?id="]
 
 search:
   paths:
@@ -76,7 +72,7 @@ search:
     - path: get_ttable.php
   inputs:
     pcat: "Show+All"
-    $raw: "scat={{ range .Categories }}{{.}},{{end}}&"
+    scat: "{{ join .Categories \",\" }}"
     subbed: ""
     fl: "{{ if .Config.freeleech }}1{{ else }}{{ end }}"
     resd: ""
@@ -93,21 +89,11 @@ search:
     selector: table.ttable_headinner tr.t-row:has(a[href^="download.php?id="])
 
   fields:
-    category:
+    categorydesc:
       selector: a.category-link
-      case:
-        ":contains(\"DVDISO\")": 1
-        ":contains(\"DVD-RIP\")": 2
-        ":contains(\"TV\")": 3
-        ":contains(\"Perf\")": 4
-        ":contains(\"PV\")": 5
-        ":contains(\"Webstream\")": 6
-        ":contains(\"Image\")": 7
-        ":contains(\"Audio\")": 8
-        ":contains(\"Album\")": 9
-        ":contains(\"Single\")": 10
-        ":contains(\"Radio\")": 11
-        ":contains(\"Misc\")": 12
+      filters:
+        - name: split
+          args: [" ", 1]
     title:
       selector: a[href^="torrents-details.php?id="]
       attribute: title
@@ -127,11 +113,10 @@ search:
       selector: td:nth-last-child(2)
     date:
       selector: td:last-child
+      # auto adjusted by site account profile
       filters:
-        - name: append
-          args: " +00:00" # auto adjusted by site account profile
         - name: dateparse
-          args: "060102 15:04:05 -07:00"
+          args: "yyMMdd HH:mm:ss"
     downloadvolumefactor:
       case:
         img[src="images/freeleech.png"]: 0 # dl not counted

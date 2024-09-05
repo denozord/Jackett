@@ -10,7 +10,7 @@ links:
 
 caps:
   categorymappings:
-    - {id: 186, cat: Books, desc: "E-book"}
+    - {id: 186, cat: Books/EBook, desc: "E-book"}
     - {id: 199, cat: Movies/SD, desc: "Film/Bluray/Hun"}
     - {id: 194, cat: Movies/SD, desc: "Film/CAM"}
     - {id: 60, cat: Movies/DVD, desc: "Film/DVD-R/Eng"}
@@ -18,7 +18,7 @@ caps:
     - {id: 20, cat: Movies/DVD, desc: "Film/DVD9/Hun"}
     - {id: 181, cat: Movies/HD, desc: "Film/HD/Eng"}
     - {id: 183, cat: Movies/HD, desc: "Film/HD/Hun"}
-    - {id: 200, cat: Movies/HD, desc: "Film/UHD/Hun"}
+    - {id: 200, cat: Movies/UHD, desc: "Film/UHD/Hun"}
     - {id: 192, cat: Movies/HD, desc: "Film/x264/Eng"}
     - {id: 190, cat: Movies/HD, desc: "Film/x264/Hun"}
     - {id: 70, cat: Movies/SD, desc: "Film/XviD/Eng"}
@@ -73,7 +73,8 @@ login:
     username: "{{ .Config.username }}"
     password: "{{ .Config.password }}"
   test:
-    path: browse.php
+    path: index.php
+    selector: a[href^="logout.php"]
 
 search:
   paths:
@@ -87,6 +88,7 @@ search:
     onlyname2: true
     sort: "{{ .Config.sort }}"
     type: "{{ .Config.type }}"
+    # can search by genre but you need the id. &imdbcat=1 for Akció.
 
   rows:
     selector: table[id!="torrent_ajanlo"] > tbody > tr[id]
@@ -98,11 +100,6 @@ search:
     title:
       selector: a[id][href^="details.php?"]
       attribute: title
-    description:
-      selector: font.line
-      filters:
-        - name: regexp
-          args: .*?\|\s*(.*)
     category:
       selector: a[href^="browse.php?cat="]
       attribute: href
@@ -112,12 +109,19 @@ search:
     details:
       selector: a[id][href^="details.php?"]
       attribute: href
-    imdb:
+    imdbid:
       selector: a[href*="imdb.com/title/tt"]
       attribute: href
     poster:
       selector: a[rel^="prettyPhoto["]
       attribute: href
+    genre:
+      selector: font.line
+      filters:
+        - name: validate
+          args: "Akció, Animáció, Beszélgetős, Családi, Dokumentum, Dráma, Életrajzi, Fantasztikus, Film-Noir, Game-Show, Háborús, Horror, Kaland, Krimi, Misztikus, Musical, News, Reality-TV, Romantikus, Rövidfilm, Sci-Fi, Sport, Thriller, Történelmi, Vígjáték, Western, Zene"
+    description:
+      text: "{{ .Result.genre }}"
     files:
       selector: td:nth-child(4)
     size:
@@ -145,6 +149,8 @@ search:
           args: ["napja", "day"]
         - name: replace
           args: ["hete", "week"]
+        - name: replace
+          args: ["éve", "year"]
         - name: timeago
     downloadvolumefactor:
       text: 0

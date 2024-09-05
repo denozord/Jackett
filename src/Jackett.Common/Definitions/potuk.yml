@@ -121,6 +121,10 @@ search:
     - path: "index.php?torrents/&freeleech={{ if .Config.freeleech }}1{{ else }}{{ end }}&filename={{ .Keywords }}"
     # imdb and tmdb not supported
 
+  keywordsfilters:
+    - name: re_replace
+      args: ["\\.", " "]
+
   rows:
     selector: table.dataList-table > tbody.normal-torrents > tr
 
@@ -142,6 +146,8 @@ search:
     magnet:
       selector: a[href^="magnet:?x"]
       attribute: href
+    description:
+      selector: a[href^="/index.php?forums/"]
     date:
       selector: time
       attribute: datetime

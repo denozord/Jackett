@@ -73,7 +73,7 @@ namespace Jackett.Server.Services
             return path;
         }
 
-        public void Initalize()
+        public void Initialize()
         {
             try
             {
@@ -107,7 +107,8 @@ namespace Jackett.Server.Services
                 {
                     var dockerMsg = "No";
                     const string cgroupFile = "/proc/1/cgroup";
-                    if (File.Exists(cgroupFile) && File.ReadAllText(cgroupFile).Contains("/docker/"))
+                    if ((File.Exists(cgroupFile) && File.ReadAllText(cgroupFile).Contains("/docker/"))
+                        || File.Exists("/.dockerenv"))
                     {
                         // this file is created in the Docker image build
                         // https://github.com/linuxserver/docker-jackett/pull/105
@@ -224,9 +225,11 @@ namespace Jackett.Server.Services
                                 var trustedRootCertificatesProperty = monoX509StoreManager.GetProperty("TrustedRootCertificates");
                                 var trustedRootCertificates = (ICollection)trustedRootCertificatesProperty.GetValue(null);
 
-                                logger.Info($"TrustedRootCertificates count: {trustedRootCertificates.Count}");
+                                var countTrustedRootCertificates = trustedRootCertificates.Count;
 
-                                if (trustedRootCertificates.Count == 0)
+                                logger.Info($"TrustedRootCertificates count: {countTrustedRootCertificates}");
+
+                                if (countTrustedRootCertificates == 0)
                                 {
                                     var caCertificatesFiles = new[]
                                     {
@@ -271,7 +274,7 @@ namespace Jackett.Server.Services
 
             try
             {
-                if (Environment.UserName == "root")
+                if (Environment.UserName == "root" && (!bool.TryParse(Environment.GetEnvironmentVariable("DisableRootWarning"), out var disableRootWarning) || !disableRootWarning))
                 {
                     var notice = "Jackett is running with root privileges. You should run Jackett as an unprivileged user.";
                     notices.Add(notice);
@@ -368,21 +371,32 @@ namespace Jackett.Server.Services
 
         public string GetServerUrl(HttpRequest request)
         {
+            if (!string.IsNullOrEmpty(config.BaseUrlOverride))
+            {
+                return $"{config.BaseUrlOverride}{BasePath()}/";
+            }
+
             var scheme = request.Scheme;
             var port = request.HttpContext.Request.Host.Port;
 
-            // Check for protocol headers added by reverse proxys
+            // Check for protocol headers added by reverse proxies
             // X-Forwarded-Proto: A de facto standard for identifying the originating protocol of an HTTP request
             var xForwardedProto = request.Headers.Where(x => x.Key == "X-Forwarded-Proto").Select(x => x.Value).FirstOrDefault();
             if (xForwardedProto.Count > 0)
+            {
                 scheme = xForwardedProto.First();
+            }
             // Front-End-Https: Non-standard header field used by Microsoft applications and load-balancers
-            else if (request.Headers.Where(x => x.Key == "Front-End-Https" && x.Value.FirstOrDefault() == "on").Any())
+            else if (request.Headers.Any(x => x.Key == "Front-End-Https" && x.Value.FirstOrDefault() == "on"))
+            {
                 scheme = "https";
+            }
 
             //default to 443 if the Host header doesn't contain the port (needed for reverse proxy setups)
             if (scheme == "https" && !request.HttpContext.Request.Host.Value.Contains(":"))
+            {
                 port = 443;
+            }
 
             return $"{scheme}://{request.HttpContext.Request.Host.Host}:{port}{BasePath()}/";
         }

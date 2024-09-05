@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
-#if !NET461
+#if !NET462
 using Microsoft.Extensions.Hosting;
 #endif
 
@@ -30,6 +30,8 @@ namespace Jackett.Server
 {
     public class Startup
     {
+        private const string AllowAllOrigins = "AllowAllOrigins";
+
         public Startup(IConfiguration configuration) => Configuration = configuration;
 
         public IConfiguration Configuration { get; }
@@ -37,9 +39,14 @@ namespace Jackett.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddResponseCompression();
+            services.AddResponseCompression()
+                    .AddCors(
+                        options =>
+                        {
+                            options.AddPolicy(name: AllowAllOrigins, corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin());
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                        })
+                    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
                         options =>
                         {
@@ -49,9 +56,7 @@ namespace Jackett.Server
                             options.Cookie.Name = "Jackett";
                         });
 
-
-
-#if NET461
+#if NET462
             services.AddMvc(
                         config => config.Filters.Add(
                             new AuthorizeFilter(
@@ -85,7 +90,7 @@ namespace Jackett.Server
 
             builder.Populate(services);
             builder.RegisterModule(new JackettModule(runtimeSettings));
-            builder.RegisterType<SecuityService>().As<ISecuityService>().SingleInstance();
+            builder.RegisterType<SecurityService>().As<ISecurityService>().SingleInstance();
             builder.RegisterType<ServerService>().As<IServerService>().SingleInstance();
             builder.RegisterType<ProtectionService>().As<IProtectionService>().SingleInstance();
             builder.RegisterType<CacheService>().As<ICacheService>().SingleInstance();
@@ -103,7 +108,7 @@ namespace Jackett.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-#if NET461
+#if NET462
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
             applicationLifetime.ApplicationStarted.Register(OnStarted);
@@ -140,6 +145,9 @@ namespace Jackett.Server
             app.UseStaticFiles();
 
             app.UseAuthentication();
+
+            if (Helper.ServerConfiguration.AllowCORS)
+                app.UseCors(AllowAllOrigins);
 
             app.UseMvc();
         }
@@ -182,6 +190,9 @@ namespace Jackett.Server
             app.UseAuthentication();
 
             app.UseRouting();
+
+            if (Helper.ServerConfiguration.AllowCORS)
+                app.UseCors(AllowAllOrigins);
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
         }

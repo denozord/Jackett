@@ -6,27 +6,12 @@ language: fr-FR
 type: public
 encoding: UTF-8
 followredirect: true
+testlinktorrent: false
 links:
+  - https://ww1.torrent9.fm/
   - https://torrent9.to/
-  - https://www.torrent9.gg/
   - https://torrent9.unblockninja.com/
-
 legacylinks:
-  - http://www.torrent9.ec/
-  - http://www.torrent9.red/
-  - http://www.torrent9.bz/
-  - http://www.torrents9.pe/
-  - http://www.torrent9.cc/
-  - http://www.torrent9.pe/
-  - http://www.torrent9.blue/
-  - https://www.torrent9.blue/
-  - https://ww2.torrent9.blue/
-  - https://www.torrent9.rip/
-  - https://www.torrent9.ph/
-  - https://ww1.torrent9.ph/
-  - https://torrent9.ga/
-  - https://www.torrent9.uno/
-  - https://wvw.torrent9.uno/
   - https://ww1.torrent9.uno/
   - https://wvw.t9.pe/
   - https://www4.torrent9.to/
@@ -42,9 +27,17 @@ legacylinks:
   - https://ww1.torrent9.to/
   - https://www.torrent9.is/
   - https://torrent9.li/ # not a proxy for torrent9 or torrent9clone
-  - https://www.oxtorrent.me/ # http 522 Connection timed out
+  - https://www.oxtorrent.me/
+  - https://www.torrent9.gg/
+  - https://www.torrent9.fi/ # this is the torrent9clone domain
+  - https://www.torrent9.fm/
+  - https://torrent9.se/ # redirect to www.
+  - https://torrent9.ninjaproxy1.com/ # no response data
+  - https://torrent9.proxyninja.org/ # Error 1007
+  - https://www.torrent9.se/
 
 caps:
+  # dont forget to update the search fields category case block
   categorymappings:
     - {id: films, cat: Movies, desc: "Movies"}
     - {id: series, cat: TV, desc: "TV"}
@@ -52,7 +45,7 @@ caps:
     - {id: ebook, cat: Books, desc: "Books"}
     - {id: logiciels, cat: PC, desc: "Software"}
     - {id: jeux-pc, cat: PC/Games, desc: "PC Games"}
-    - {id: jeux-consoles, cat: Console/XBox 360, desc: "Console Games"}
+    - {id: other, cat: Other, desc: "Other"} # dummy cat for results missing icon
 
   modes:
     search: [q]
@@ -60,26 +53,27 @@ caps:
     movie-search: [q]
     music-search: [q]
     book-search: [q]
+  allowrawsearch: true
 
 settings:
   - name: multilang
     type: checkbox
-    label: Replace MULTI by another language in release name
+    label: Replace MULTi by another language in release name
     default: false
   - name: multilanguage
     type: select
-    label: Replace MULTI by this language
+    label: Replace MULTi by this language
     default: FRENCH
     options:
       FRENCH: FRENCH
-      MULTI.FRENCH: MULTI.FRENCH
+      MULTi FRENCH: MULTi FRENCH
       ENGLISH: ENGLISH
-      MULTI.ENGLISH: MULTI.ENGLISH
+      MULTi ENGLISH: MULTi ENGLISH
       VOSTFR: VOSTFR
-      MULTI.VOSTFR: MULTI.VOSTFR
+      MULTi VOSTFR: MULTi VOSTFR
   - name: vostfr
     type: checkbox
-    label: Replace VOSTFR with ENGLISH
+    label: Replace VOSTFR and SUBFRENCH with ENGLISH
     default: false
   - name: sort
     type: select
@@ -95,19 +89,15 @@ settings:
       ".html,trie-poid-a": size asc
       ".html,trie-nom-d": title desc
       ".html,trie-nom-a": title asc
-  - name: info_131681
-    type: info
-    label: About Torrent9 Categories
-    default: Torrent9 only returns category <b>Movies</b> in its <i>Keywordless</i> search results page.</br>To pass your apps' indexer TEST you will need to include the 131681(Movies) category.
 
 download:
   selectors:
-    - selector: a[href^="magnet:?"]
+    - selector: a:has(i.fa-magnet)
       attribute: href
 
 search:
   paths:
-    - path: "{{ if .Keywords }}/search_torrent/{{ .Keywords }}{{ .Config.sort }}{{ else }}/top_torrent.html{{ end }}"
+    - path: "{{ if .Keywords }}/search_torrent/{{ .Keywords }}{{ .Config.sort }}{{ else }}{{ end }}"
   keywordsfilters:
     # if searching for season packs with S01 to saison 1 #9712
     - name: re_replace
@@ -117,61 +107,54 @@ search:
     - name: replace
       args: [" ", "-"]
 
+  headers:
+    # site blocks all Linux User-Agents, so use a slightly altered Windows Jackett UA here (e.g. Safari/537.36 > Safari/537.35)
+    User-Agent: ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.35"]
+
   rows:
     selector: table.table-striped > tbody > tr
     filters:
       - name: andmatch
 
   fields:
-    category:
+    category_optional:
       selector: td:nth-child(1) i
+      optional: true
       case:
         i[class="fa fa-video-camera"]: films
-        i[class="fa fa-desktop"]: series
-        i[class="fa fa-tv"]: series
+        i[class="fa fa-tv"]: series # search by name
+        i[class="fa fa-desktop"]: series # keywordless search
         i[class="fa fa-music"]: musique
         i[class="fa fa-gamepad"]: jeux-pc
         i[class="fa fa-laptop"]: logiciels
         i[class="fa fa-book"]: ebook
-    site_date:
+    category:
+      text: "{{ if .Result.category_optional }}{{ .Result.category_optional }}{{ else }}other{{ end }}"
+    title_default:
       selector: td:nth-child(1) a
-      filters:
-        # year is at the end of the title, so we get it and name it site_date
-        - name: regexp
-          args: "(19|20\\d{2})$"
+    title_optional:
+      selector: td:nth-child(1) a[title]
+      attribute: title
+      optional: true
     title_phase1:
-      selector: td:nth-child(1) a
+      text: "{{ if .Result.title_optional }}{{ .Result.title_optional }}{{ else }}{{ .Result.title_default }}{{ end }}"
       filters:
-        # now we put the date at the right place according scene naming rules using .Result.site_date
         - name: re_replace
-          args: ["(?i)( FRENCH)", " {{ .Result.site_date }} FRENCH"]
-        - name: re_replace
-          args: ["(?i)( MULTI)", " {{ .Result.site_date }} MULTI"]
-        - name: re_replace
-          args: ["(?i)( TRUEFRENCH)", " {{ .Result.site_date }} TRUEFRENCH"]
-        - name: re_replace
-          args: ["(?i)( VOSTFR)", " {{ .Result.site_date }} VOSTFR"]
-        - name: re_replace
-          args: ["(?i)( SUBFRENCH)", " {{ .Result.site_date }} SUBFRENCH"]
-        # and we delete it at the end
-        - name: re_replace
-          args: ["(19|20\\d{2})$", ""]
-    title_multilang:
+          args: ["(?i)\\b(FRENCH|MULTI|TRUEFRENCH|VOSTFR|SUBFRENCH)\\b(.+?)(\\b(19|20\\d{2})\\b)$", "$3 $1$2"]
+    title_vostfr:
       text: "{{ .Result.title_phase1 }}"
       filters:
         - name: re_replace
-          args: ["(?i)(\\smulti\\s)", " {{ .Config.multilanguage }} "]
+          args: ["(?i)\\b(vostfr|subfrench)\\b", "ENGLISH"]
     title_phase2:
-      text: "{{ if .Config.multilang }}{{ .Result.title_multilang }}{{ else }}{{ .Result.title_phase1 }}{{ end }}"
-    title_vostfr:
+      text: "{{ if .Config.vostfr }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase1 }}{{ end }}"
+    title_multilang:
       text: "{{ .Result.title_phase2 }}"
       filters:
         - name: re_replace
-          args: ["(?i)(\\svostfr\\s)", " ENGLISH "]
-        - name: re_replace
-          args: ["(?i)(\\ssubfrench\\s)", " ENGLISH "]
+          args: ["(?i)\\b(MULTI(?!.*(?:FRENCH|ENGLISH|VOSTFR)))\\b", "{{ .Config.multilanguage }}"]
     title:
-      text: "{{ if .Config.vostfr }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
+      text: "{{ if .Config.multilang }}{{ .Result.title_multilang }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
     details:
       selector: td:nth-child(1) a
       attribute: href
@@ -179,28 +162,25 @@ search:
       selector: td:nth-child(1) a
       attribute: href
     date:
-      text: now
-    size:
-      selector: td:nth-child(2)
+      selector: td:nth-child(2):contains("/")
+      optional: true
+      default: now
       filters:
-        - name: replace
-          args: ["Ko", "KB"]
-        - name: replace
-          args: ["Mo", "MB"]
-        - name: replace
-          args: ["Go", "GB"]
-        - name: replace
-          args: ["To", "TB"]
+        - name: dateparse
+          args: "dd/MM/yyyy"
+    size:
+      selector: "{{ if .Keywords }}td:nth-child(3){{ else }}td:nth-child(2){{ end }}"
+      filters:
+        - name: re_replace
+          args: ["(\\w)o", "$1B"]
     seeders:
-      text: 0
-    seeders:
-      selector: td:nth-child(3)
+      selector: "{{ if .Keywords }}td:nth-child(4){{ else }}td:nth-child(3){{ end }}"
       optional: true
+      default: 0
     leechers:
-      text: 0
-    leechers:
-      selector: td:nth-child(4)
+      selector: "{{ if .Keywords }}td:nth-child(5){{ else }}td:nth-child(4){{ end }}"
       optional: true
+      default: 0
     downloadvolumefactor:
       text: 0
     uploadvolumefactor:

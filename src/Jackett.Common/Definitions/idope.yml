@@ -1,10 +1,11 @@
 ---
 id: idope
-name: Idope
+name: iDope
 description: "iDope is a Public torrent search engine presenting direct magnet links"
 language: en-US
 type: public
 encoding: UTF-8
+requestDelay: 2
 links:
   - https://idope.se/
 legacylinks:
@@ -59,10 +60,8 @@ settings:
       3: "created asc"
       1: "seeders asc"
       2: "size asc"
-  - name: flaresolverr
-    type: info
-    label: FlareSolverr
-    default: This site may use Cloudflare DDoS Protection, therefore Jackett requires <a href="https://github.com/Jackett/Jackett#configuring-flaresolverr" target="_blank">FlareSolver</a> to access it.
+  - name: info_flaresolverr
+    type: info_flaresolverr
 
 search:
   paths:
@@ -76,10 +75,9 @@ search:
 
   fields:
     category:
-      text: 0
-    category|noappend:
-      optional: true
       selector: div.resultdivbotton div.resultdivbottoncategory
+      optional: true
+      default: 0
       case:
         ":contains(\"Others\")": 0
         ":contains(\"Movies\")": 1
@@ -96,7 +94,7 @@ search:
     details:
       selector: div.resultdivtop a
       attribute: href
-    download-itorrents:
+    download_itorrents:
       selector: div.resultdivbotton div.hideinfohash
       filters:
         - name: toupper
@@ -105,7 +103,7 @@ search:
         - name: append
           args: ".torrent"
     download:
-      text: "{{ if .Config.itorrents-links }}{{ .Result.download-itorrents }}{{ else }}{{ end }}"
+      text: "{{ if .Config.itorrents-links }}{{ .Result.download_itorrents }}{{ else }}{{ end }}"
     infohash:
       selector: div.resultdivbotton div.hideinfohash
     date:

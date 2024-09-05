@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Jackett.Common.Utils
@@ -37,5 +40,54 @@ namespace Jackett.Common.Utils
                     throw new FormatException($"The cookie '{kv.Key}={kv.Value}' is malformed.");
             return string.Join("; ", cookieDictionary.Select(kv => kv.Key + "=" + kv.Value));
         }
+
+        /// <summary>
+        /// Remove all the cookies from a CookieContainer. That includes all domains and protocols.
+        /// </summary>
+        /// <param name="cookieJar">A cookie container</param>
+        public static void RemoveAllCookies(CookieContainer cookieJar)
+        {
+            var table = (Hashtable)cookieJar
+                                   .GetType()
+                                   .InvokeMember("m_domainTable", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance, null, cookieJar, Array.Empty<object>());
+
+            foreach (var tableKey in table.Keys)
+            {
+                var domain = (string)tableKey;
+
+                if (domain.StartsWith("."))
+                {
+                    domain = domain.Substring(1);
+                }
+
+                var list = (SortedList)table[tableKey]
+                                        .GetType()
+                                        .InvokeMember("m_list", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance, null, table[tableKey], Array.Empty<object>());
+
+                foreach (var listKey in list.Keys)
+                {
+                    foreach (Cookie cookie in cookieJar.GetCookies(new Uri($"http://{domain}{listKey}")))
+                    {
+                        cookie.Expired = true;
+                    }
+
+                    foreach (Cookie cookie in cookieJar.GetCookies(new Uri($"https://{domain}{listKey}")))
+                    {
+                        cookie.Expired = true;
+                    }
+                }
+
+                foreach (Cookie cookie in cookieJar.GetCookies(new Uri($"http://{domain}")))
+                {
+                    cookie.Expired = true;
+                }
+
+                foreach (Cookie cookie in cookieJar.GetCookies(new Uri($"https://{domain}")))
+                {
+                    cookie.Expired = true;
+                }
+            }
+        }
+
     }
 }

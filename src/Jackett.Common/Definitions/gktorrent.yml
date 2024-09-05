@@ -5,46 +5,50 @@ description: "GkTorrent is a French Public site for TV / MOVIES / GENERAL"
 language: fr-FR
 type: public
 encoding: UTF-8
-followredirect: true
+# to fetch current domain use https://www.protege-torrent.com/Gktorrent
 links:
-  - https://www.gktorrents.com/
-  - https://gktorrent.nocensor.work/
+  - https://www.gktorrent.sk/
 legacylinks:
-  - https://www.gktorrent.com/
-  - http://www.gktorrent.com/
-  - http://ww1.gktorrent.com/
-  - http://ww2.gktorrent.com/
-  - https://ww2.gktorrent.com/
-  - https://ww3.gktorrent.com/
-  - http://www.gktorrent.net/
-  - https://ww4.gktorrent.com/
-  - http://www.gktorrent.co/
-  - https://www.gktorrent.co/
-  - https://www.gktorrent.ws/
-  - https://www.gktorrent.org/
-  - https://www.gktorrent.me/
+  # latest domains list
   - https://www.rantop.org/
-  - https://www.gktorrent.cx/
-  - https://www.gktorrent.tv/
-  - https://www.gktorrent.net/
-  - https://www.gktorrent.biz/
-  - https://www.gktorrent.io/
-  - https://www.gktorrent.pw/
-  - https://wvw.gktorrent.pw/
-  - https://vww.gktorrent.pw/
-  - https://www.gktorrent.cc/
-  - https://gktorrent.nocensor.space/
+  - https://www.torrent.ws/
+  - https://www.protege-torrent.com/
+  - https://gktorrent.news/
+  # actual legacylinks
+  - https://gktorrent.nocensor.click/
+  - https://www.gktorrent.ph/
+  - https://www.gktorrent.vc/
+  - https://www.gktorrent.mx/
+  - https://www.gktorrent.fi/
+  - https://www.gktorrent.wf/
+  - https://gktorrent.nocensor.cloud/
+  - https://gktorrent.mrunblock.bond/
+  - https://www.gktorrent.wtf/
+  - https://www.gktorrent.vg/
+  - https://www.gktorrent.lol/
+  - https://www.gktorrent.sh/
+  - https://www.gktorrent.eu/
+  - https://www.gktorrent.xyz/
+  - https://www.gktorrent.pm/
+  - https://www.gktorrent.tw/
+  - https://www.gktorrent.in/
 
 caps:
   categorymappings:
-    - {id: movies, cat: Movies, desc: "Movies"}
-    - {id: tvshows, cat: TV, desc: "TV Shows"}
-    - {id: softwares, cat: PC, desc: "Softwares"}
-    - {id: music, cat: Audio, desc: "Music"}
-    - {id: console-games, cat: Console, desc: "Console Games"}
-    - {id: pc-games, cat: PC/Games, desc: "PC Games"}
-    - {id: books, cat: Books, desc: "Books"}
-    - {id: xxx, cat: XXX, desc: "XXX"}
+    - {id: Films, cat: Movies, desc: "Movies"}
+    - {id: Vidéos, cat: Movies, desc: "Vidéos"}
+    - {id: Animes, cat: TV/Anime, desc: "Anime"}
+    - {id: Séries, cat: TV, desc: "TV Series"}
+    - {id: Spectacles, cat: TV, desc: "TV Shows"}
+    - {id: Documentaires, cat: TV/Documentary, desc: "Documentaries"}
+    - {id: Sports, cat: TV/Sport, desc: "Sport"}
+    - {id: Musiques, cat: Audio, desc: "Music"}
+    - {id: Ebooks, cat: Books, desc: "Books"}
+    - {id: Livres, cat: Books, desc: "Books"}
+    - {id: Logiciels, cat: PC, desc: "Software"}
+    - {id: Jeux-PC, cat: PC/Games, desc: "PC Games"}
+    - {id: Jeux-Consoles, cat: Console/XBox 360, desc: "Console Games"}
+    - {id: Porno, cat: XXX, desc: "XXX"}
 
   modes:
     search: [q]
@@ -52,32 +56,39 @@ caps:
     movie-search: [q]
     music-search: [q]
     book-search: [q]
+  allowrawsearch: true
 
 settings:
+  - name: info_flaresolverr
+    type: info_flaresolverr
   - name: multilang
     type: checkbox
-    label: Replace MULTI by another language in release name
+    label: Replace MULTi by another language in release name
     default: false
   - name: multilanguage
     type: select
-    label: Replace MULTI by this language
+    label: Replace MULTi by this language
     default: FRENCH
     options:
       FRENCH: FRENCH
-      MULTI.FRENCH: MULTI.FRENCH
+      MULTi FRENCH: MULTi FRENCH
       ENGLISH: ENGLISH
-      MULTI.ENGLISH: MULTI.ENGLISH
+      MULTi ENGLISH: MULTi ENGLISH
       VOSTFR: VOSTFR
-      MULTI.VOSTFR: MULTI.VOSTFR
+      MULTi VOSTFR: MULTi VOSTFR
   - name: vostfr
     type: checkbox
-    label: Replace VOSTFR with ENGLISH
+    label: Replace VOSTFR and SUBFRENCH with ENGLISH
     default: false
 
 download:
   selectors:
-    - selector: a[href*="magnet:?xt="]
+    - selector: a[href^="magnet:?"]
       attribute: href
+    - selector: script:contains("magnet:?")
+      filters:
+        - name: regexp
+          args: "\\s'(magnet:\\?.+?)';"
 
 search:
   paths:
@@ -90,65 +101,39 @@ search:
       args: ["(?i)(S)(\\d{1,3})$", "saison $2"]
 
   rows:
-    selector: table.table-hover > tbody > tr:has(a[href*=torrent])
+    selector: table.table-hover > tbody > tr:has(td a[href])
 
   fields:
     category:
       selector: td:nth-child(1) > i
-      case:
-        .Films: movies
-        .Séries: tvshows
-        .Logiciels: softwares
-        .Musique: music
-        .Jeux-Consoles: console-games
-        .Jeux-PC: pc-games
-        .Ebook: books
-        .Porno: xxx
-    site_date:
-      selector: td:nth-child(1) a
-      filters:
-        # year is at the end of the title, so we get it and name it site_date
-        - name: regexp
-          args: "(19|20\\d{2})$"
+      attribute: class
     title_phase1:
       selector: td:nth-child(1) a
       filters:
-        # now we put the date at the right place according scene naming rules using .Result.site_date
         - name: re_replace
-          args: ["(?i)( FRENCH)", " {{ .Result.site_date }} FRENCH"]
-        - name: re_replace
-          args: ["(?i)( MULTI)", " {{ .Result.site_date }} MULTI"]
-        - name: re_replace
-          args: ["(?i)( TRUEFRENCH)", " {{ .Result.site_date }} TRUEFRENCH"]
-        - name: re_replace
-          args: ["(?i)( VOSTFR)", " {{ .Result.site_date }} VOSTFR"]
-        - name: re_replace
-          args: ["(?i)( SUBFRENCH)", " {{ .Result.site_date }} SUBFRENCH"]
-        # and we delete it at the end
-        - name: re_replace
-          args: ["(19|20\\d{2})$", ""]
-    title_multilang:
+          args: ["(?i)\\b(FRENCH|MULTI|TRUEFRENCH|VOSTFR|SUBFRENCH)\\b(.+?)(\\b(19|20\\d{2})\\b)$", "$3 $1$2"]
+    title_vostfr:
       text: "{{ .Result.title_phase1 }}"
       filters:
         - name: re_replace
-          args: ["(?i)(\\smulti\\s)", " {{ .Config.multilanguage }} "]
+          args: ["(?i)\\b(vostfr|subfrench)\\b", "ENGLISH"]
     title_phase2:
-      text: "{{ if .Config.multilang }}{{ .Result.title_multilang }}{{ else }}{{ .Result.title_phase1 }}{{ end }}"
-    title_vostfr:
+      text: "{{ if .Config.vostfr }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase1 }}{{ end }}"
+    title_multilang:
       text: "{{ .Result.title_phase2 }}"
       filters:
         - name: re_replace
-          args: ["(?i)(\\svostfr\\s)", " ENGLISH "]
-        - name: re_replace
-          args: ["(?i)(\\ssubfrench\\s)", " ENGLISH "]
+          args: ["(?i)\\b(MULTI(?!.*(?:FRENCH|ENGLISH|VOSTFR)))\\b", "{{ .Config.multilanguage }}"]
     title:
-      text: "{{ if .Config.vostfr }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
+      text: "{{ if .Config.multilang }}{{ .Result.title_multilang }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
     details:
       selector: td:nth-child(1) a
       attribute: href
+      filters:
+        - name: regexp
+          args: (/?torrent/\d+)
     download:
-      selector: td:nth-child(1) a
-      attribute: href
+      text: "{{ .Result.details }}"
     size:
       selector: td:nth-child(2)
     date:

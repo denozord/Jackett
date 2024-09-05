@@ -2,7 +2,7 @@
 id: tvchaosuk
 name: TVChaosUK
 description: "TV Chaos UK (TVCUK) is a Private Torrent Tracker for UK TV"
-language: en-UK
+language: en-GB
 type: private
 encoding: UTF-8
 links:
@@ -24,11 +24,11 @@ caps:
     - {id: 30, cat: TV, desc: "Soaps"}
     - {id: 33, cat: TV, desc: "Sci-Fi"}
     - {id: 42, cat: TV/Sport, desc: "Sport"}
-    - {id: 4, cat: TV, desc: "Holding Bin"}
+    - {id: 53, cat: TV, desc: "Holding Bin"}
 
   modes:
     search: [q]
-    tv-search: [q, season, ep, imdbid, tvdbid]
+    tv-search: [q, season, ep, imdbid, tvdbid, tmdbid]
     movie-search: [q, imdbid, tmdbid]
     music-search: [q]
 
@@ -84,19 +84,21 @@ search:
   inputs:
     $raw: "{{ range .Categories }}categories[]={{.}}&{{end}}"
     search: "{{ if .Query.IMDBID }}{{ else }}{{ .Keywords }}{{ end }}" # for dashboard imdbid search
-    description: ""
-    uploader: ""
     imdb: "{{ .Query.IMDBIDShort }}"
     tvdb: "{{ .Query.TVDBID }}"
     tmdb: "{{ .Query.TMDBID }}"
-    mal: ""
-    igdb: ""
-    start_year: ""
-    end_year: ""
     sorting: "{{ .Config.sort }}"
     direction: "{{ .Config.type }}"
     qty: 100
     freeleech: "{{ if .Config.freeleech }}1{{ else }}{{ end }}"
+    view: list
+    # can search by genre but need range support. &genres[]=Action&genres[]=Comedy for Action and Comedy
+  keywordsfilters:
+    # if searching for season packs switch S01 to Series 1 #14369
+    - name: re_replace
+      args: ["(?i)(S0)(\\d{1,2})$", "Series $2"]
+    - name: re_replace
+      args: ["(?i)(S)(\\d{1,3})$", "Series $2"]
 
   rows:
     selector: table > tbody > tr
@@ -110,6 +112,9 @@ search:
           args: "/categories/(\\d+)"
     title:
       selector: a.view-torrent
+      filters:
+        - name: re_replace
+          args: ["(?i)Series[\\s]+(\\d+)", "S$1"]
     download:
       selector: a[href*="/download/"]
       attribute: href
@@ -126,6 +131,17 @@ search:
           args: "&w=180&h=270" # for display on dashboard
         - name: replace
           args: ["https://images.weserv.nl/?url=https://via.placeholder.com/600x900&w=180&h=270", ""]
+    genre:
+      selector: td:nth-last-child(6)
+      filters:
+        - name: replace
+          args: ["\n", ""]
+        - name: re_replace
+          args: ["(?i)(Science Fiction)", "Science_Fiction"]
+        - name: validate
+          args: "Action, Adventure, Animation, Biography, Comedy, Crime, Documentary, Drama, Family, Fantasy, Game-Show, History, Horror, Music, Musical, Mystery, News, Reality-TV, Romance, Science_Fiction, Sitcom, Sport, Talk-Show, Thriller, War, Western"
+    description:
+      text: "{{ .Result.genre }}"
     size:
       selector: td:nth-last-child(4)
     seeders:
@@ -134,11 +150,11 @@ search:
       selector: td:nth-last-child(2)
     grabs:
       selector: td:nth-last-child(1)
-    imdb:
+    imdbid:
       selector: a[href*="imdb.com/title/tt"]
       attribute: href
     tmdbid:
-      selector: a[href*="themoviedb.org/movie/"]
+      selector: a[href*="themoviedb.org/movie/"], a[href*="themoviedb.org/tv/"]
       attribute: href
     date:
       selector: time
@@ -193,7 +209,7 @@ search:
       case:
         i[class*="fa-gem text-green"]: 2 # Single Torrent Double Upload
         i[class*="fa-globe text-green"]: 2 # Global Double Upload
-        i[class*="fa-certificate text-pink"]: 2 # Featured Torrent
+        i[class*="fa-certificate text-pink"]: 2 # Featured Torrent Weekly Freeleech
         "*": 1
     minimumratio:
       text: 0.4

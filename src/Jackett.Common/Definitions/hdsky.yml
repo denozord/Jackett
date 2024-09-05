@@ -11,15 +11,20 @@ links:
 caps:
   categorymappings:
     - {id: 401, cat: Movies, desc: "Movies/电影"}
-    - {id: 404, cat: TV/Documentary, desc: "Documentaries/纪录片"}
-    - {id: 410, cat: Movies, desc: "iPad/iPad影视"}
-    - {id: 405, cat: TV/Anime, desc: "Animations/动漫"}
-    - {id: 402, cat: TV, desc: "TV Series/剧集"}
+    - {id: 402, cat: TV, desc: "TV Series/剧集(分集)"}
     - {id: 403, cat: TV, desc: "TV Shows/综艺"}
+    - {id: 404, cat: TV/Documentary, desc: "Documentaries/纪录片"}
+    - {id: 405, cat: TV/Anime, desc: "Animations/动漫"}
     - {id: 406, cat: Audio/Video, desc: "Music Videos/音乐MV"}
     - {id: 407, cat: TV/Sport, desc: "Sports/体育"}
     - {id: 408, cat: Audio, desc: "HQ Audio/无损音乐"}
     - {id: 409, cat: Other, desc: "Misc/其他"}
+    - {id: 410, cat: Movies, desc: "iPad/iPad影视"}
+    - {id: 411, cat: TV, desc: "TV Series/剧集(合集)"}
+    - {id: 412, cat: TV, desc: "TV Series/海外剧集(分集)"}
+    - {id: 413, cat: TV, desc: "TV Series/海外剧集(合集)"}
+    - {id: 414, cat: TV, desc: "TV Shows/海外综艺(分集)"}
+    - {id: 415, cat: TV, desc: "TV Shows/海外综艺(合集)"}
 
   modes:
     search: [q]
@@ -31,10 +36,8 @@ settings:
   - name: cookie
     type: text
     label: Cookie
-  - name: info
-    type: info
-    label: How to get the Cookie
-    default: "<ol><li>Login to this tracker with your browser<li>Open the <b>DevTools</b> panel by pressing <b>F12</b><li>Select the <b>Network</b> tab<li>Click on the <b>Doc</b> button (Chrome Browser) or <b>HTML</b> button (FireFox)<li>Refresh the page by pressing <b>F5</b><li>Click on the first row entry<li>Select the <b>Headers</b> tab on the Right panel<li>Find <b>'cookie:'</b> in the <b>Request Headers</b> section<li><b>Select</b> and <b>Copy</b> the whole cookie string <i>(everything after 'cookie: ')</i> and <b>Paste</b> here.</ol>"
+  - name: info_cookie
+    type: info_cookie
   - name: freeleech
     type: checkbox
     label: Search freeleech only
@@ -50,6 +53,7 @@ login:
     cookie: "{{ .Config.cookie }}"
   test:
     path: torrents.php
+    selector: a[href="logout.php"]
 
 download:
   method: post
@@ -68,6 +72,7 @@ search:
     search_area: "{{ if .Query.IMDBID }}4{{ else }}0{{ end }}"
     # 0=AND, 1=OR, 2=exact
     search_mode: 0
+    notnewword: 1
 
   rows:
     selector: table.torrents > tbody > tr:has(table.torrentname)
@@ -90,7 +95,7 @@ search:
     download:
       selector: form[action*="/download.php?id="]
       attribute: action
-    imdb:
+    imdbid:
       selector: a[href*="imdb.com/title/tt"]
       attribute: href
     size:
@@ -101,14 +106,27 @@ search:
       selector: td.rowfollow:nth-child(6)
     leechers:
       selector: td.rowfollow:nth-child(7)
-    date:
+    date_elapsed:
+      # time type: time elapsed (default)
       selector: td.rowfollow:nth-child(4) > span[title]
       attribute: title
+      optional: true
       filters:
         - name: append
           args: " +08:00" # CST
         - name: dateparse
-          args: "2006-01-02 15:04:05 -07:00"
+          args: "yyyy-MM-dd HH:mm:ss zzz"
+    date_added:
+      # time added
+      selector: td.rowfollow:nth-child(4):not(:has(span))
+      optional: true
+      filters:
+        - name: append
+          args: " +08:00" # CST
+        - name: dateparse
+          args: "yyyy-MM-ddHH:mm:ss zzz"
+    date:
+      text: "{{ if or .Result.date_elapsed .Result.date_added }}{{ or .Result.date_elapsed .Result.date_added }}{{ else }}now{{ end }}"
     downloadvolumefactor:
       case:
         img.pro_free: 0
@@ -125,5 +143,5 @@ search:
         "*": 1
     description:
       selector: td:nth-child(2)
-      remove: a, img
+      remove: a, b, font, img, span
 # NexusPHP Standard v1.5 Beta 5
